@@ -18,6 +18,8 @@ import {
   openZarrLayerPanel,
   STAC_PLUGIN_ID,
 } from "@geolibre/plugins";
+import { openAddData } from "../../data/AddDataDialog";
+import { isTauri as isTauriRuntime } from "../../../lib/tauri-io";
 import { useAppStore } from "@geolibre/core";
 import { rendererCapabilities, resetPrimaryCesiumBuiltInControlState } from "@geolibre/map";
 import { getPluginManager } from "../../../hooks/usePlugins";
@@ -60,9 +62,12 @@ export function createAddLayerHandlers({
   setSpaceborneLidarDialogOpen,
 }: AddLayerHandlerDeps): AddLayerHandlers {
   return {
-    vector: () => openVectorLayerPanel(appApi),
+    // Defani edition: the desktop app adds files through the ArcGIS-style Add Data dialog.
+    vector: () => (isTauriRuntime() ? openAddData("all") : openVectorLayerPanel(appApi)),
     raster: () =>
-      !rendererCapabilities(appApi.getMapRenderer?.() ?? "maplibre").controlLayerPanels
+      isTauriRuntime()
+        ? openAddData("raster")
+        : !rendererCapabilities(appApi.getMapRenderer?.() ?? "maplibre").controlLayerPanels
         ? openAddDataKind("raster")
         : openRasterLayerPanel(appApi),
     stac: () => {

@@ -33,7 +33,8 @@ import { isImageSource } from "../../lib/icon-source";
 
 export const PLUGIN_PANEL_DEFAULT_WIDTH = 320;
 const MIN_WIDTH = 240;
-const MAX_WIDTH = 640;
+// Defani edition: wide enough for the SQL Workspace docked left of the map.
+const MAX_WIDTH = 1200;
 
 /** Clamp a plugin-panel width to the allowed range. Shared with the shell. */
 export function clampPluginPanelWidth(width: number): number {

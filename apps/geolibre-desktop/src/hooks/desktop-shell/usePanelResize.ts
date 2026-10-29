@@ -11,7 +11,7 @@ import { PANEL_RESIZE_END_EVENT, PANEL_RESIZE_START_EVENT } from "../../lib/pane
 import { isTauri } from "../../lib/tauri-io";
 import type { LayoutOptions } from "../useLayoutOptions";
 
-const DEFAULT_SIDE_PANEL_WIDTH = 320;
+const DEFAULT_SIDE_PANEL_WIDTH = 250; // Defani edition: slim ArcGIS-like Contents pane
 const MIN_SIDE_PANEL_WIDTH = 180;
 const MAX_SIDE_PANEL_WIDTH = 560;
 // Width of a side panel's collapsed rail (`md:w-11` = 2.75rem). The Style panel
@@ -36,7 +36,7 @@ function clamp(value: number, min: number, max: number): number {
 // Users can still drag up to MAX_SIDE_PANEL_WIDTH either way.
 function initialSidePanelWidth(): number {
   if (typeof window === "undefined") return DEFAULT_SIDE_PANEL_WIDTH;
-  const cap = Math.round(window.innerWidth * 0.3);
+  const cap = Math.round(window.innerWidth * 0.2);
   return clamp(cap, MIN_SIDE_PANEL_WIDTH, DEFAULT_SIDE_PANEL_WIDTH);
 }
 

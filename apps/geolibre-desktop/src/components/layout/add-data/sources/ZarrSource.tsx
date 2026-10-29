@@ -1,5 +1,5 @@
 import { Input, Label, Select } from "@geolibre/ui";
-import { useAppStore, VECTOR_COLOR_RAMPS } from "@geolibre/core";
+import { RASTER_SAFE_COLOR_RAMPS, useAppStore } from "@geolibre/core";
 import { addZarrRasterLayer } from "@geolibre/plugins";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -109,7 +109,7 @@ export function ZarrSource() {
       <div>
         <Label htmlFor="zarr-colormap">{t("addData.netcdf.colormapLabel")}</Label>
         <Select id="zarr-colormap" value={colormap} onChange={(e) => setColormap(e.target.value)}>
-          {VECTOR_COLOR_RAMPS.map((ramp) => (
+          {RASTER_SAFE_COLOR_RAMPS.map((ramp) => (
             <option key={ramp.value} value={ramp.value}>
               {ramp.label}
             </option>

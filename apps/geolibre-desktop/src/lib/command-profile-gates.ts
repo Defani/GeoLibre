@@ -12,6 +12,7 @@
 
 import type { UiProfileSettings } from "../hooks/useDesktopSettings";
 import type { Command } from "./commands";
+import { isRemovedCommand } from "./custom-build";
 import {
   DATA_SOURCE_CATALOG,
   isDataSourceVisible,
@@ -169,6 +170,7 @@ export function commandMenuItem(id: string): string | undefined {
  *   source, or plugin.
  */
 export function isCommandVisibleInProfile(profile: UiProfileSettings, id: string): boolean {
+  if (isRemovedCommand(id)) return false;
   if (!profile.enabled || PROFILE_EXEMPT_COMMANDS.has(id)) return true;
   const menu = COMMAND_MENU_PREFIXES.find(([prefix]) => id.startsWith(prefix))?.[1];
   if (menu && !isMenuVisible(profile, menu)) return false;

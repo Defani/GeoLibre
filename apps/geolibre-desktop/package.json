@@ -64,6 +64,7 @@
     "@tauri-apps/plugin-opener": "^2.7.0",
     "@turf/boolean-intersects": "^7.4.0",
     "@turf/helpers": "^7.4.0",
+    "@turf/turf": "^7.3.5",
     "apache-arrow": "^21.2.0",
     "cesium": "^1.146.0",
     "dompurify": "^3.4.16",

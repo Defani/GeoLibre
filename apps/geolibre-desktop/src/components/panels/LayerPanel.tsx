@@ -502,13 +502,13 @@ export function LayerPanel({
     // second in-flow position.
     <aside
       aria-label={t("sharedRail.layers")}
-      className="relative grid max-h-[min(24rem,42vh)] supports-[max-height:1dvh]:max-h-[min(24rem,42dvh)] w-full shrink-0 grid-rows-[auto_minmax(0,1fr)] border-b bg-card max-md:absolute max-md:inset-x-0 max-md:top-0 max-md:z-30 max-md:shadow-xl md:max-h-none md:w-[var(--layer-panel-width)] md:border-b-0 md:border-e"
+      className="toc-panel relative grid max-h-[min(24rem,42vh)] supports-[max-height:1dvh]:max-h-[min(24rem,42dvh)] w-full shrink-0 grid-rows-[auto_minmax(0,1fr)] border-b bg-card max-md:absolute max-md:inset-x-0 max-md:top-0 max-md:z-30 max-md:shadow-xl md:max-h-none md:w-[var(--layer-panel-width)] md:border-b-0 md:border-e"
     >
       <div
         role="separator"
         aria-orientation="vertical"
         aria-label={t("layers.resizePanel")}
-        className="absolute -end-1 top-0 z-20 hidden h-full w-2 cursor-col-resize touch-none select-none border-e border-transparent hover:border-primary md:block"
+        className="layer-resize-handle absolute -end-1 top-0 z-20 hidden h-full w-2 cursor-col-resize touch-none select-none border-e border-transparent hover:border-primary md:block"
         onPointerDown={onResizeStart}
       />
       <div>
@@ -549,7 +549,7 @@ export function LayerPanel({
           data-layer-list=""
           role="list"
           aria-label={t("sharedRail.layers")}
-          className={`w-full min-w-0 p-2 ${compactLayerList ? "space-y-0.5" : "space-y-1"}`}
+          className="w-full min-w-0 space-y-0 p-1"
         >
           {visibleLayers.map((layer, displayIndex) => {
             const group = layer.groupId ? groupById.get(layer.groupId) : undefined;

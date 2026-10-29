@@ -434,6 +434,22 @@ export function geometryGeoJsonSql(geometryExpression: string, sourceCrs: string
   )}, ${quoteSqlString(TARGET_CRS)}, true))`;
 }
 
+/**
+ * Defani edition: like {@link geometryGeoJsonSql}, but simplifies each geometry
+ * (in WGS84 degrees, after any reprojection) and trims coordinates to 6
+ * decimals, so a heavy file loads quickly — QGIS-style render simplification.
+ */
+export function geometryGeoJsonSqlSimplified(
+  geometryExpression: string,
+  sourceCrs: string | null,
+  tolerance: number,
+): string {
+  const wgs84 = sourceCrs
+    ? `ST_Transform(${geometryExpression}, ${quoteSqlString(sourceCrs)}, ${quoteSqlString(TARGET_CRS)}, true)`
+    : geometryExpression;
+  return `ST_AsGeoJSON(ST_ReducePrecision(ST_Simplify(${wgs84}, ${tolerance}), 0.000001))`;
+}
+
 // GDAL's GeoJSON driver (used by `ST_Read`) synthesises an `OGC_FID` column for
 // every feature. When a layer's GeoJSON already carries an `OGC_FID` property —
 // which happens whenever the layer was itself derived from a prior `ST_Read`

@@ -22,6 +22,8 @@ import {
   measurePerimeter,
   type AreaUnit,
   type DistanceUnit,
+  geometryCoordinate,
+  type CoordFormat,
 } from "./geometry-measure";
 
 /** A helper exposed to expressions by name. */
@@ -119,7 +121,7 @@ const EXPRESSION_CONSTANTS: Record<string, number> = {
  * meters). Units mirror the Measure tool — e.g. `$area("hectares")`,
  * `$length("kilometers")`. Non-matching geometries return 0.
  */
-export const GEOMETRY_HELPER_NAMES = ["$length", "$perimeter", "$area"] as const;
+export const GEOMETRY_HELPER_NAMES = ["$length", "$perimeter", "$area", "$x", "$y"] as const;
 
 /** A mutable slot the geometry helpers read, updated once per evaluated row. */
 interface GeometryHolder {
@@ -137,6 +139,9 @@ function createGeometryHelpers(holder: GeometryHolder): Helper[] {
     (unit) => measureLength(holder.geometry, unit as DistanceUnit | undefined),
     (unit) => measurePerimeter(holder.geometry, unit as DistanceUnit | undefined),
     (unit) => measureArea(holder.geometry, unit as AreaUnit | undefined),
+    // Defani edition: `$x("dms")` / `$y()` — longitude / latitude (centroid).
+    (format) => geometryCoordinate(holder.geometry, "x", format as CoordFormat | undefined),
+    (format) => geometryCoordinate(holder.geometry, "y", format as CoordFormat | undefined),
   ];
 }
 

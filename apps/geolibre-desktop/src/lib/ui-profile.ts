@@ -8,6 +8,7 @@
 
 import type { ParseKeys } from "i18next";
 import type { ExperienceLevel, UiProfileSettings } from "../hooks/useDesktopSettings";
+import { isRemovedMenuItem } from "./custom-build";
 
 export type ComplexityTier = "basic" | "intermediate" | "advanced";
 
@@ -994,11 +995,14 @@ export function isPluginVisible(profile: UiProfileSettings, id: string): boolean
 
 /** Whether a top-level toolbar menu should be shown. */
 export function isMenuVisible(profile: UiProfileSettings, menuId: string): boolean {
+  // Defani edition: no plugin system in this build; features are built in.
+  if (menuId === "plugins") return false;
   return !profile.enabled || !profile.hiddenMenus.includes(menuId);
 }
 
 /** Whether a menu-item catalog id should be shown in its menu. */
 export function isMenuItemVisible(profile: UiProfileSettings, itemId: string): boolean {
+  if (isRemovedMenuItem(itemId)) return false;
   return !profile.enabled || !profile.hiddenMenuItems.includes(itemId);
 }
 

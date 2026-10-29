@@ -1032,6 +1032,57 @@ export async function writePostgisTable(
   }
   return (await res.json()) as WritePostgisTableResult;
 }
+
+export interface DuckdbPostgresQueryResult {
+  columns: string[];
+  rows: Record<string, unknown>[];
+  rowCount: number;
+  /** True when the result was capped at the requested row limit. */
+  truncated: boolean;
+  /** First geometry column as GeoJSON, or null when the result has none. */
+  geojson: FeatureCollection | null;
+}
+
+/**
+ * Run one DuckDB statement in the sidecar's native DuckDB with the PostgreSQL
+ * database attached read-only as `db` (and selected with `USE`).
+ */
+export async function runDuckdbPostgresQuery(
+  connection: string,
+  sql: string,
+  baseUrl = DEFAULT_SIDECAR_URL,
+): Promise<DuckdbPostgresQueryResult> {
+  let res: Response;
+  try {
+    res = await sidecarFetch(`${baseUrl}/duckdb-postgres/query`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ connection, sql }),
+    });
+  } catch (error) {
+    throw sidecarConnectionError(baseUrl, error);
+  }
+  if (!res.ok) {
+    throw new Error(await responseErrorMessage(res, "DuckDB query failed"));
+  }
+  return (await res.json()) as DuckdbPostgresQueryResult;
+}
+
+/** Drop the sidecar's cached DuckDB attach so the next query sees a fresh schema. */
+export async function disconnectDuckdbPostgres(
+  connection: string,
+  baseUrl = DEFAULT_SIDECAR_URL,
+): Promise<void> {
+  try {
+    await sidecarFetch(`${baseUrl}/duckdb-postgres/disconnect`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ connection }),
+    });
+  } catch {
+    // Best effort: a stale attach only means the schema refreshes later.
+  }
+}
 export type MssqlAuthMethod =
   | "sql"
   | "windows"
@@ -1554,4 +1605,83 @@ function sidecarConnectionError(baseUrl: string, error: unknown): Error {
     `Could not connect to the GeoLibre sidecar at ${baseUrl}. ` +
       "Start the sidecar to run processing tools.",
   );
+}
+
+// --- Species distribution modeling (Defani edition, /sdm) -------------------
+
+export interface SdmStatus {
+  available: boolean;
+  /** elapid is being installed into the runtime; ask again later. */
+  installing?: boolean;
+  message: string;
+}
+
+export interface SdmRunRequest {
+  use_sample?: boolean;
+  occurrence_geojson?: unknown;
+  occurrence_path?: string;
+  raster_paths?: string[];
+  background_count?: number;
+  beta_multiplier?: number;
+  transform?: "cloglog" | "logistic" | "raw" | "exponential";
+  feature_types?: Array<"linear" | "quadratic" | "hinge" | "product" | "threshold">;
+  test_fraction?: number;
+}
+
+/** Whether elapid is ready in the sidecar runtime (starts its install if not). */
+export async function fetchSdmStatus(baseUrl = DEFAULT_SIDECAR_URL): Promise<SdmStatus> {
+  let res: Response;
+  try {
+    res = await sidecarFetch(`${baseUrl}/sdm/status`);
+  } catch (error) {
+    throw sidecarConnectionError(baseUrl, error);
+  }
+  if (!res.ok) throw new Error(`SDM status failed: HTTP ${res.status}`);
+  return (await res.json()) as SdmStatus;
+}
+
+/** Start a Maxent job; poll it with {@link fetchConversionJob}. */
+export async function startSdmJob(
+  request: SdmRunRequest,
+  baseUrl = DEFAULT_SIDECAR_URL,
+): Promise<ConversionJob> {
+  let res: Response;
+  try {
+    res = await sidecarFetch(`${baseUrl}/sdm/run`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(request),
+    });
+  } catch (error) {
+    throw sidecarConnectionError(baseUrl, error);
+  }
+  if (!res.ok) throw new Error(await responseErrorMessage(res, "Could not start the SDM job"));
+  return (await res.json()) as ConversionJob;
+}
+
+/** Download one result file of an SDM job as a Blob. */
+export async function fetchSdmFile(
+  jobId: string,
+  name: "suitability.tif" | "presence.geojson" | "summary.json",
+  baseUrl = DEFAULT_SIDECAR_URL,
+): Promise<Blob> {
+  let res: Response;
+  try {
+    res = await sidecarFetch(
+      `${baseUrl}/sdm/jobs/${encodeURIComponent(jobId)}/files/${encodeURIComponent(name)}`,
+    );
+  } catch (error) {
+    throw sidecarConnectionError(baseUrl, error);
+  }
+  if (!res.ok) throw new Error(await responseErrorMessage(res, "Could not download the SDM result"));
+  return res.blob();
+}
+
+/** Stop a running SDM job. */
+export async function cancelSdmJob(jobId: string, baseUrl = DEFAULT_SIDECAR_URL): Promise<void> {
+  try {
+    await sidecarFetch(`${baseUrl}/sdm/jobs/${encodeURIComponent(jobId)}/cancel`, { method: "POST" });
+  } catch (error) {
+    throw sidecarConnectionError(baseUrl, error);
+  }
 }

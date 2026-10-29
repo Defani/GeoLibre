@@ -1,10 +1,12 @@
 import {
-  DEFAULT_PROJECT_NAME,
   excludeHiddenFieldsFromProject,
   redactProjectCredentials,
   serializeProject,
   useAppStore,
 } from "@geolibre/core";
+import { createPortal } from "react-dom";
+import { useHeaderHost } from "../../lib/header-host";
+import { publishCommandPalette, useCommandRegistry } from "../../lib/command-registry";
 import { rendererCapabilities, type MapEngine } from "@geolibre/map";
 import {
   CLOUDS_PLUGIN_ID,
@@ -15,10 +17,11 @@ import {
   openPlanetaryComputerPanel,
   PRECIPITATION_PLUGIN_ID,
   REVERSE_GEOCODE_PLUGIN_ID,
+  SWIPE_PLUGIN_ID,
 } from "@geolibre/plugins";
-import { Button, cn, Input } from "@geolibre/ui";
-import { Map, Moon, Sun } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { Button, cn } from "@geolibre/ui";
+import { Moon, Sun } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useConsentGatedActions } from "../../hooks/useConsentGatedActions";
 import type { CollaborationApi } from "../../hooks/useCollaboration";
@@ -35,14 +38,12 @@ import { useAddDataDialogState } from "../../hooks/toolbar/useAddDataDialogState
 import { useMapControlVisibility } from "../../hooks/toolbar/useMapControlVisibility";
 import { usePluginLabelSync } from "../../hooks/toolbar/usePluginLabelSync";
 import { usePaletteCommands } from "../../hooks/toolbar/usePaletteCommands";
+import { useProcessingToolboxStore } from "../../lib/processing-toolbox";
 import { openSimplifyInterface, useToolbarCommands } from "../../hooks/toolbar/useToolbarCommands";
 import { useToolbarDialogs } from "../../hooks/toolbar/useToolbarDialogs";
-import { resolveAppName } from "../../lib/app-name";
 import { IS_MAS_BUILD } from "../../lib/build-flags";
 import { googleEarthUrl, googleMapsUrl } from "../../lib/external-map-links";
-import { isMobile } from "../../lib/is-mobile";
 import { resolveShareHost } from "../../lib/share-geolibre";
-import { isTauri } from "../../lib/tauri-io";
 import { MENU_MANAGED_PLUGIN_IDS, isMenuVisible, isPluginVisible } from "../../lib/ui-profile";
 import { FieldCollectionDialog } from "./FieldCollectionDialog";
 import { PrintLayoutDialog } from "./PrintLayoutDialog";
@@ -76,6 +77,9 @@ import { OsmPbfDialogs } from "./toolbar/OsmPbfDialogs";
 import { PluginsMenu } from "./toolbar/PluginsMenu";
 import { PluginToolbarMenus } from "./toolbar/PluginToolbarMenus";
 import { ProcessingMenu } from "./toolbar/ProcessingMenu";
+import { MapScaleBox } from "./ProViewTabs";
+import { EditorDock } from "./EditorDock";
+import { EditorMenu, GeoprocessingMenu, LiveBridgeButton } from "./toolbar/HeaderQuickMenus";
 import { ProjectFileDialogs } from "./toolbar/ProjectFileDialogs";
 import { ProjectMenu } from "./toolbar/ProjectMenu";
 import {
@@ -145,9 +149,7 @@ export function TopToolbar({
   const loadEditorFeaturesOpen = useAppStore((s) => s.ui.loadEditorFeaturesOpen);
   const loadEditorFeaturesLayerId = useAppStore((s) => s.ui.loadEditorFeaturesLayerId);
   const projectName = useAppStore((s) => s.projectName);
-  const projectPath = useAppStore((s) => s.projectPath);
   const projectGeneration = useAppStore((s) => s.projectGeneration);
-  const setProjectName = useAppStore((s) => s.setProjectName);
   // The Collaborate dialog's visibility lives in the store so the on-canvas
   // session-status badge can reopen it from outside this component tree (#754).
   // The dialog itself is rendered by DesktopShell (not here) so it survives
@@ -207,9 +209,6 @@ export function TopToolbar({
     projectGeneration,
   );
 
-  // Tracks an active IME composition so pressing Enter to confirm a CJK
-  // candidate doesn't blur the project-name field mid-composition.
-  const projectNameComposingRef = useRef(false);
 
   const { controlsVisible, setControlsVisible, toggleMapControl } = useMapControlVisibility(
     mapControllerRef,
@@ -274,21 +273,33 @@ export function TopToolbar({
   // surface first opens).
   const paletteCommands = usePaletteCommands({
     commands: allowedCommands,
-    open: dialogs.commandPaletteOpen || processingMenuOpen,
+    // Defani edition: always load the tool catalog, the Processing Toolbox
+    // panel lists every tool.
+    open: true,
     openNetworkTool: consent.openNetworkTool,
   });
 
+  useEffect(() => {
+    useProcessingToolboxStore.getState().setCommands(paletteCommands.processingCommands);
+  }, [paletteCommands.processingCommands]);
+  // Defani edition: the ribbon runs these same commands by id.
+  useEffect(() => {
+    useCommandRegistry.getState().setCommands([...paletteCommands.commands, ...paletteCommands.processingCommands]);
+  }, [paletteCommands.commands, paletteCommands.processingCommands]);
+  useEffect(() => publishCommandPalette(() => dialogs.setCommandPaletteOpen(true)), [dialogs.setCommandPaletteOpen]);
+
   const toolbarButtonSize = compact ? "icon" : "sm";
-  const toolbarButtonClass = compact ? "h-8 w-8 shrink-0" : "shrink-0";
-  const toolbarIconClassName = cn("h-3.5 w-3.5", showLabels && "sm:me-1");
-  // "GeoLibre Desktop" is the *desktop* product name. `isTauri()` alone is true
-  // on iOS and Android too — where the app is named plain "GeoLibre" (the bundle
-  // name from tauri.ios.conf.json, the home-screen icon, and the store listing),
-  // so titling it "GeoLibre Desktop" there contradicts every other surface.
-  // A deployment can replace either with its own name (GEOLIBRE_APP_NAME).
-  const appTitle = resolveAppName(isTauri() && !isMobile() ? "GeoLibre Desktop" : "GeoLibre");
+  // Defani edition: ArcGIS Pro ribbon look, a large icon above its label.
+  const ribbon = !compact && showLabels;
+  const toolbarButtonClass = compact
+    ? "h-8 w-8 shrink-0"
+    : ribbon
+      ? "h-10 shrink-0 flex-col gap-0.5 px-1.5 py-0.5 text-[10.5px] font-normal leading-none [&_svg]:!size-5"
+      : "shrink-0";
+  const toolbarIconClassName = ribbon ? "h-5 w-5 shrink-0" : cn("h-3.5 w-3.5", showLabels && "sm:me-1");
   const renderToolbarLabel = (label: string) =>
-    showLabels ? <span className="hidden sm:inline">{label}</span> : null;
+    showLabels ? <span className={ribbon ? "hidden leading-none sm:block" : "hidden sm:inline"}>{label}</span> : null;
+  const homeHost = useHeaderHost((s) => s.host);
   const chrome: ToolbarChrome = {
     buttonClass: toolbarButtonClass,
     buttonSize: toolbarButtonSize,
@@ -296,19 +307,8 @@ export function TopToolbar({
     renderLabel: renderToolbarLabel,
   };
 
-  return (
-    <header
-      className={cn(
-        // One row at every width: menus that don't fit scroll horizontally
-        // instead of wrapping onto a second row (#871).
-        "flex min-h-11 min-w-0 shrink-0 flex-nowrap items-center gap-1 overflow-x-auto border-b bg-card py-1",
-        compact ? "px-1.5" : "px-2",
-      )}
-    >
-      <span className="me-1 flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary md:me-2">
-        <Map className="h-4 w-4" />
-        {showProjectInfo ? <span className="hidden sm:inline">{appTitle}</span> : null}
-      </span>
+  const menuBar = (
+    <>
       {!viewer && isMenuVisible(uiProfile, "project") && (
         <ProjectMenu
           chrome={chrome}
@@ -441,6 +441,31 @@ export function TopToolbar({
             onOpenGeoreferencer={() => dialogs.setGeoreferencerOpen(true)}
           />
         )}
+      {/* Defani edition: ArcMap-style Geoprocessing and Editor menus. */}
+      {!viewer ? <GeoprocessingMenu chrome={chrome} /> : null}
+      {!viewer ? <EditorMenu chrome={chrome} /> : null}
+      {/* Defani edition: Live MCP (AI link) as a native header tool. */}
+      {!viewer ? <LiveBridgeButton chrome={chrome} /> : null}
+      {/* Defani edition: Layer Swipe as a native header tool. */}
+      {!viewer ? (
+        <Button
+          className={cn(chrome.buttonClass, isActive(SWIPE_PLUGIN_ID) && "bg-accent text-accent-foreground")}
+          variant="ghost"
+          size={chrome.buttonSize}
+          aria-label="Swipe"
+          aria-pressed={isActive(SWIPE_PLUGIN_ID)}
+          title="Layer Swipe: compare two layers with a sliding divider"
+          onClick={() => toggle(SWIPE_PLUGIN_ID, appApi)}
+        >
+          <svg viewBox="0 0 24 24" className={chrome.iconClassName} fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+            <rect x="3" y="4" width="9" height="16" fill="#9cc8f2" stroke="#2f7fd6" />
+            <rect x="12" y="4" width="9" height="16" fill="#b9dca0" stroke="#3ea044" />
+            <path d="M12 2.5v19" stroke="#1f2937" strokeWidth="1.8" />
+            <path d="M9.5 12H6.5M14.5 12h3M7.8 10.6 6.4 12l1.4 1.4M16.2 10.6l1.4 1.4-1.4 1.4" stroke="#1f2937" strokeWidth="1.2" />
+          </svg>
+          {chrome.renderLabel("Swipe")}
+        </Button>
+      ) : null}
       {isMenuVisible(uiProfile, "controls") && (
         <ControlsMenu
           chrome={chrome}
@@ -645,6 +670,12 @@ export function TopToolbar({
           onAbout={() => dialogs.setAboutOpen(true)}
         />
       )}
+      {/* Defani edition: ArcMap Editor toolbar joins the header while editing. */}
+      {!viewer ? <EditorDock /> : null}
+      {/* Defani edition: ArcMap-style scale box in the header. */}
+      {!viewer ? (
+        <MapScaleBox variant="header" mapControllerRef={mapControllerRef} mapReadyGeneration={mapReadyGeneration} />
+      ) : null}
       {/* External plugin toolbar menus render after Help so third-party menus
           sit at the end of the banner, past the built-in menus. */}
       {!viewer && deploymentCapabilities.has("plugins:install") ? (
@@ -720,49 +751,22 @@ export function TopToolbar({
             <Moon className="h-3.5 w-3.5" />
           )}
         </Button>
-        {showProjectInfo ? (
-          <>
-            <Input
-              aria-label={t("toolbar.item.projectName")}
-              className="hidden h-7 w-44 border-transparent px-2 text-xs shadow-none focus-visible:border-input md:block"
-              value={projectName}
-              readOnly={viewer}
-              onChange={(event) => {
-                if (viewer) return;
-                setProjectName(event.target.value);
-              }}
-              onKeyDown={(event) => {
-                if (
-                  event.key === "Enter" &&
-                  !projectNameComposingRef.current &&
-                  !event.nativeEvent.isComposing
-                ) {
-                  event.currentTarget.blur();
-                }
-              }}
-              onCompositionStart={() => {
-                projectNameComposingRef.current = true;
-              }}
-              onCompositionEnd={() => {
-                projectNameComposingRef.current = false;
-              }}
-              onBlur={(event) => {
-                if (viewer) return;
-                const nextName = event.target.value.trim();
-                // Persist the canonical, locale-independent default name; a
-                // translated string would otherwise be written into the saved
-                // project file and vary by UI language.
-                if (!nextName) setProjectName(DEFAULT_PROJECT_NAME);
-              }}
-            />
-            {projectPath ? (
-              <span className="hidden truncate lg:inline" title={projectPath}>
-                {projectPath}
-              </span>
-            ) : null}
-          </>
-        ) : null}
+        {/* Defani edition: no project-name box in the header. */}
       </div>
+    </>
+  );
+  // Defani edition: in the Data View the menu bar lives in the ribbon's Home tab.
+  if (homeHost) return createPortal(menuBar, homeHost);
+  return (
+    <header
+      className={cn(
+        // One row at every width: menus that don't fit scroll horizontally
+        // instead of wrapping onto a second row (#871).
+        "flex min-h-11 min-w-0 shrink-0 flex-nowrap items-center gap-1 overflow-x-auto border-b bg-card py-1",
+        compact ? "px-1.5" : "px-2",
+      )}
+    >
+      {menuBar}
     </header>
   );
 }

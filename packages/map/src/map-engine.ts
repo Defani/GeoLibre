@@ -509,16 +509,16 @@ export const STORY_OPACITY_PAINT_PROPERTIES: Record<string, string[]> = {
  */
 export const DEFAULT_BUILT_IN_CONTROL_VISIBILITY: Record<BuiltInMapControl, boolean> = {
   navigation: false,
-  fullscreen: true,
-  compass: true,
+  fullscreen: false, // Defani edition: no floating buttons on the Data View map
+  compass: false,
   geolocate: false,
-  globe: true,
+  globe: false,
   terrain: false,
   scale: true,
   attribution: true,
   logo: false,
   "maptoolkit-logo": false,
-  "layer-control": true,
+  "layer-control": false,
 };
 
 export const DEFAULT_BUILT_IN_CONTROL_POSITIONS: Record<

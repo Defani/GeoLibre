@@ -106,7 +106,8 @@ let geoEditorPosition: GeoLibreMapControlPosition = "top-left";
 
 const GEO_EDITOR_OPTIONS = {
   collapsed: false,
-  toolbarOrientation: "vertical",
+  // Defani edition: one row, docked in the Editor strip under the view tabs.
+  toolbarOrientation: "horizontal",
   columns: 2,
   drawModes: [
     "polygon",

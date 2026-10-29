@@ -1,3 +1,4 @@
+import { ProPluginsIcon } from "./ProIcons";
 import {
   COMPONENTS_PLUGIN_ID,
   DECK_VIZ_PLUGIN_ID,
@@ -33,7 +34,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@geolibre/ui";
-import { Puzzle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDesktopSettingsStore } from "../../../hooks/useDesktopSettings";
 import { useToolbarMenus } from "../../../hooks/usePluginUiSurfaces";
@@ -267,7 +267,7 @@ export function PluginsMenu({
           size={chrome.buttonSize}
           aria-label={t("toolbar.menu.plugins")}
         >
-          <Puzzle className={chrome.iconClassName} />
+          <ProPluginsIcon className={chrome.iconClassName} />
           {chrome.renderLabel(t("toolbar.menu.plugins"))}
         </Button>
       </DropdownMenuTrigger>

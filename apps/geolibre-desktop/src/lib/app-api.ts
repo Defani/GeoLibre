@@ -853,7 +853,7 @@ export function createAppAPI(
     getMapProjection: () =>
       // Legacy projects may not carry a projection preference; default to globe
       // like MapController.enforceProjection so the declared return type holds.
-      useAppStore.getState().preferences.map.projection ?? "globe",
+      useAppStore.getState().preferences.map.projection ?? "mercator",
     registerRightPanel: host.registerRightPanel,
     unregisterRightPanel: host.unregisterRightPanel,
     openRightPanel: host.openRightPanel,

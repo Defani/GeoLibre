@@ -1,3 +1,4 @@
+import { ProProjectIcon } from "./ProIcons";
 import { projectPathLabel, useAppCapability, useAppStore } from "@geolibre/core";
 import {
   Button,
@@ -11,31 +12,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@geolibre/ui";
-import {
-  BookOpen,
-  Bookmark,
-  Copy,
-  FileCode2,
-  FileInput,
-  FileOutput,
-  FilePen,
-  FilePlus2,
-  FileText,
-  Folder,
-  FolderOpen,
-  HardDriveDownload,
-  History,
-  Import,
-  Layers,
-  LayoutGrid,
-  Link2,
-  Palette,
-  Printer,
-  Save,
-  Share2,
-  Users,
-  X,
-} from "lucide-react";
+import { BookOpen, Bookmark, Copy, FileCode2, FileInput, FileOutput, FilePen, FilePlus2, FileText, FolderOpen, HardDriveDownload, History, Import, Layers, LayoutGrid, Link2, Palette, Printer, Save, Share2, Users, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDesktopSettingsStore } from "../../../hooks/useDesktopSettings";
 import { projectMenuItemCapability } from "../../../lib/deployment-gates";
@@ -214,7 +191,7 @@ export function ProjectMenu({
           size={chrome.buttonSize}
           aria-label={t("toolbar.menu.project")}
         >
-          <Folder className={chrome.iconClassName} />
+          <ProProjectIcon className={chrome.iconClassName} />
           {chrome.renderLabel(t("toolbar.menu.project"))}
         </Button>
       </DropdownMenuTrigger>

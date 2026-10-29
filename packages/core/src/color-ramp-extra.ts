@@ -1,0 +1,100 @@
+/**
+ * Extra color ramps for the personal build (Defani edition): 80 ramps on top of
+ * the 20 built-in ones, so the style panels offer 100 palettes in total.
+ * Anchor colors are sampled from the published schemes (ColorBrewer, cmocean,
+ * Crameri Scientific Colour Maps, matplotlib) and interpolated like the built-ins.
+ * They are vector/print ramps; raster rendering keeps using the built-in names.
+ */
+import type { ColorRamp } from "./color-ramp";
+
+const r = (value: string, label: string, colors: string[]): ColorRamp => ({ value, label, colors });
+
+export const EXTRA_COLOR_RAMPS: readonly ColorRamp[] = [
+  // ColorBrewer sequential
+  r("ylgn", "Yellow-Green", ["#ffffe5", "#d9f0a3", "#78c679", "#238443", "#004529"]),
+  r("ylgnbu", "Yellow-Green-Blue", ["#ffffd9", "#c7e9b4", "#41b6c4", "#225ea8", "#081d58"]),
+  r("gnbu", "Green-Blue", ["#f7fcf0", "#ccebc5", "#7bccc4", "#2b8cbe", "#084081"]),
+  r("bugn", "Blue-Green", ["#f7fcfd", "#ccece6", "#66c2a4", "#238b45", "#00441b"]),
+  r("pubugn", "Purple-Blue-Green", ["#fff7fb", "#d0d1e6", "#67a9cf", "#02818a", "#014636"]),
+  r("pubu", "Purple-Blue", ["#fff7fb", "#d0d1e6", "#74a9cf", "#0570b0", "#023858"]),
+  r("bupu", "Blue-Purple", ["#f7fcfd", "#bfd3e6", "#8c96c6", "#88419d", "#4d004b"]),
+  r("rdpu", "Red-Purple", ["#fff7f3", "#fcc5c0", "#f768a1", "#ae017e", "#49006a"]),
+  r("purd", "Purple-Red", ["#f7f4f9", "#d4b9da", "#df65b0", "#ce1256", "#67001f"]),
+  r("orrd", "Orange-Red", ["#fff7ec", "#fdd49e", "#fc8d59", "#d7301f", "#7f0000"]),
+  r("ylorrd", "Yellow-Orange-Red", ["#ffffcc", "#fed976", "#fd8d3c", "#e31a1c", "#800026"]),
+  r("ylorbr", "Yellow-Orange-Brown", ["#ffffe5", "#fee391", "#fe9929", "#cc4c02", "#662506"]),
+  // ColorBrewer diverging
+  r("brbg", "Brown-Blue-Green", ["#8c510a", "#d8b365", "#f5f5f5", "#5ab4ac", "#01665e"]),
+  r("piyg", "Pink-Yellow-Green", ["#c51b7d", "#e9a3c9", "#f7f7f7", "#a1d76a", "#4d9221"]),
+  r("prgn", "Purple-Green", ["#762a83", "#af8dc3", "#f7f7f7", "#7fbf7b", "#1b7837"]),
+  r("puor", "Purple-Orange", ["#b35806", "#f1a340", "#f7f7f7", "#998ec3", "#542788"]),
+  r("rdgy", "Red-Grey", ["#b2182b", "#ef8a62", "#ffffff", "#999999", "#4d4d4d"]),
+  // ColorBrewer qualitative
+  r("accent", "Accent", ["#7fc97f", "#beaed4", "#fdc086", "#ffff99", "#386cb0", "#f0027f", "#bf5b17", "#666666"]),
+  r("dark2", "Dark2", ["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666"]),
+  r("paired", "Paired", ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a"]),
+  r("pastel1", "Pastel1", ["#fbb4ae", "#b3cde3", "#ccebc5", "#decbe4", "#fed9a6", "#ffffcc", "#e5d8bd", "#fddaec"]),
+  r("pastel2", "Pastel2", ["#b3e2cd", "#fdcdac", "#cbd5e8", "#f4cae4", "#e6f5c9", "#fff2ae", "#f1e2cc", "#cccccc"]),
+  r("set1", "Set1", ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf"]),
+  r("set2", "Set2", ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"]),
+  r("set3", "Set3", ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5"]),
+  r("tab10", "Tableau 10", ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]),
+  // matplotlib
+  r("twilight", "Twilight", ["#e2d9e2", "#7b8fc0", "#5e3e8a", "#2f1436", "#8a3e4f", "#c88a6a", "#e2d9e2"]),
+  r("cubehelix", "Cubehelix", ["#000000", "#1a1530", "#163d4e", "#1f6642", "#54792f", "#a07949", "#d07e93", "#cf9cda", "#c1caf3", "#ffffff"]),
+  r("hot", "Hot", ["#0b0000", "#ff0000", "#ffff00", "#ffffff"]),
+  r("winter", "Winter", ["#0000ff", "#00ff80"]),
+  r("bone", "Bone", ["#000000", "#545474", "#a7c7c7", "#ffffff"]),
+  r("copper", "Copper", ["#000000", "#9f6540", "#ffc77f"]),
+  r("pink", "Pink", ["#1e0000", "#b88787", "#e8e8b4", "#ffffff"]),
+  r("ocean", "Ocean", ["#008000", "#000055", "#0080aa", "#ffffff"]),
+  r("gist_earth", "Gist Earth", ["#000000", "#1d4a7a", "#3f8f61", "#9fb04d", "#c7a76c", "#fdfbfb"]),
+  r("rainbow", "Rainbow", ["#8000ff", "#1996f3", "#4df3ce", "#b2f396", "#ff964f", "#ff0000"]),
+  r("bwr", "Blue-White-Red", ["#0000ff", "#ffffff", "#ff0000"]),
+  r("seismic", "Seismic", ["#00004c", "#0000ff", "#ffffff", "#ff0000", "#7f0000"]),
+  r("gnuplot", "Gnuplot", ["#000000", "#7f00ff", "#b42dd4", "#dd8000", "#ffff00"]),
+  r("cmrmap", "CMRmap", ["#000000", "#26267f", "#7f26bf", "#ff3f3f", "#e5bf26", "#ffffff"]),
+  r("nipy_spectral", "Nipy Spectral", ["#000000", "#8500a0", "#0000dd", "#00a4bb", "#00aa00", "#00ff00", "#ffd500", "#ff0000", "#cccccc"]),
+  r("hsv", "HSV", ["#ff0000", "#ffff00", "#00ff00", "#00ffff", "#0000ff", "#ff00ff", "#ff0000"]),
+  // cmocean
+  r("thermal", "Thermal (cmocean)", ["#042333", "#2c3395", "#744992", "#b15f82", "#eb7958", "#fbb43d", "#e8fa5b"]),
+  r("haline", "Haline (cmocean)", ["#2a186c", "#0e4e96", "#1b7a8c", "#36a27d", "#80c45f", "#fdef9a"]),
+  r("solar", "Solar (cmocean)", ["#331418", "#682325", "#973b1c", "#b66413", "#cb921a", "#e1c22b", "#e0fd4a"]),
+  r("ice", "Ice (cmocean)", ["#040613", "#292851", "#3f4b96", "#427bb7", "#61a8c7", "#9cd4da", "#eafdfd"]),
+  r("oxy", "Oxy (cmocean)", ["#400505", "#850a0b", "#6f6f6e", "#9b9a9a", "#cbcac9", "#ebf34b", "#dcad1c"]),
+  r("deep", "Deep (cmocean)", ["#fdfecc", "#a5dfa7", "#5cb8a4", "#3a8ea0", "#3f6393", "#3c3d72", "#281a2c"]),
+  r("dense", "Dense (cmocean)", ["#e6f1f1", "#a0cfdc", "#6ea3da", "#7270d2", "#7a43a6", "#6c1d64", "#360e24"]),
+  r("algae", "Algae (cmocean)", ["#d7f9d0", "#91d589", "#45b052", "#118a43", "#106333", "#123d23", "#122414"]),
+  r("matter", "Matter (cmocean)", ["#fdedb0", "#f8ad79", "#ea6a58", "#c43b5c", "#8c2a62", "#511d55", "#2f0f3d"]),
+  r("turbid", "Turbid (cmocean)", ["#e9f6ab", "#d0c070", "#b58b45", "#8b5f34", "#5c4226", "#352a17", "#221e1b"]),
+  r("speed", "Speed (cmocean)", ["#fffdcd", "#c9cf6c", "#7fad2c", "#2e8b17", "#0f6827", "#11432a", "#172313"]),
+  r("amp", "Amp (cmocean)", ["#f1ecec", "#e2b2a2", "#d57a5f", "#c1412f", "#951c2a", "#5e0c25", "#3c0911"]),
+  r("tempo", "Tempo (cmocean)", ["#fff6f4", "#c0dbc3", "#7fbca0", "#3e9a87", "#1b7172", "#1a4a5a", "#151d44"]),
+  r("rain", "Rain (cmocean)", ["#eeedf3", "#c1c5a5", "#78b17f", "#2c9578", "#18717a", "#2a4a75", "#21153a"]),
+  r("topo", "Topo (cmocean)", ["#282739", "#3d5f95", "#65a8b0", "#c1dfc3", "#1e5a2a", "#6c8e3a", "#d8b97a", "#fdfdfd"]),
+  r("balance", "Balance (cmocean)", ["#181c43", "#2a5fbe", "#86aed0", "#f1ecec", "#d48a74", "#ae2c33", "#3c0912"]),
+  r("delta", "Delta (cmocean)", ["#111d4e", "#1b6ba3", "#68b4c0", "#fefccd", "#7ca14b", "#1e6230", "#172312"]),
+  r("curl", "Curl (cmocean)", ["#151d44", "#1c6b70", "#78b195", "#fef6f5", "#d18a85", "#90304b", "#340d35"]),
+  r("diff", "Diff (cmocean)", ["#081d58", "#4b6d9d", "#adbfcf", "#f5f2ef", "#c8b896", "#87713e", "#1c1609"]),
+  // Crameri Scientific Colour Maps
+  r("batlow", "Batlow (Crameri)", ["#011959", "#10475e", "#3c6d56", "#828231", "#d29243", "#fca8a4", "#faccfa"]),
+  r("roma", "Roma (Crameri)", ["#7e1700", "#b06f25", "#dbc263", "#cde9d9", "#5ab0c4", "#2867a5", "#023198"]),
+  r("vik", "Vik (Crameri)", ["#001261", "#0b5895", "#88b8d1", "#ebe5e0", "#d9a07e", "#a0471a", "#590008"]),
+  r("lajolla", "Lajolla (Crameri)", ["#ffffcc", "#f6d86f", "#e9934d", "#cd5e4a", "#8f3f3c", "#4d2a21", "#1a1a01"]),
+  r("oslo", "Oslo (Crameri)", ["#010101", "#0f2238", "#1c4672", "#4b72aa", "#8399ba", "#bec9d8", "#ffffff"]),
+  r("hawaii", "Hawaii (Crameri)", ["#8c0273", "#923e46", "#9a6e2b", "#a7a31e", "#7fc566", "#5ad4c3", "#b3f2fd"]),
+  r("tokyo", "Tokyo (Crameri)", ["#1a0e34", "#5f3456", "#835f6a", "#8e8b75", "#9cb98a", "#cde6ae", "#fefed8"]),
+  r("bamako", "Bamako (Crameri)", ["#003a46", "#14514a", "#2e6840", "#55802d", "#8b9518", "#c5a63a", "#ffe5ad"]),
+  r("davos", "Davos (Crameri)", ["#2c1a4c", "#2a4f87", "#4d77a0", "#7a96a9", "#a8b5ad", "#dbe0c6", "#fefefe"]),
+  r("imola", "Imola (Crameri)", ["#1a33b3", "#2a4ea7", "#38679a", "#468488", "#62a777", "#a0d76a", "#ffff66"]),
+  r("broc", "Broc (Crameri)", ["#2c1a4c", "#2e5c8c", "#99b4ce", "#f2f2ee", "#c7c69a", "#7f8040", "#262600"]),
+  r("cork", "Cork (Crameri)", ["#2c194c", "#2f5b8b", "#9ab1cd", "#e4ece5", "#8dbd93", "#367a3b", "#424c0f"]),
+  r("berlin", "Berlin (Crameri)", ["#9eb0ff", "#3a88c1", "#1c4157", "#110f0f", "#501802", "#a1543f", "#ffadad"]),
+  // Remote sensing and GIS
+  r("ndvi", "NDVI", ["#a50026", "#d73027", "#fdae61", "#ffffbf", "#a6d96a", "#1a9850", "#004529"]),
+  r("elevation", "Elevation (hypsometric)", ["#5e9d5f", "#a8c97f", "#f2e8a3", "#d9a66b", "#a86a3c", "#7a4b2e", "#ffffff"]),
+  r("precipitation", "Precipitation", ["#ffffff", "#c7e9c0", "#74c476", "#41b6c4", "#2c7fb8", "#253494", "#081d58"]),
+  r("temperature", "Temperature", ["#313695", "#4575b4", "#abd9e9", "#ffffbf", "#fdae61", "#d73027", "#a50026"]),
+  r("burn", "Burn severity", ["#1a9850", "#a6d96a", "#ffffbf", "#fdae61", "#f46d43", "#a50026", "#4d0013"]),
+  r("bathymetry", "Bathymetry", ["#08306b", "#08519c", "#2171b5", "#4292c6", "#6baed6", "#9ecae1", "#deebf7"]),
+] as const;

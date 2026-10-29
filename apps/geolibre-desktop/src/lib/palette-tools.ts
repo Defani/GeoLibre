@@ -90,6 +90,7 @@ export function buildPaletteToolCommands(context: PaletteToolContext): Command[]
         id,
         title: translateToolName(t, catalog, tool),
         group: toolsGroup,
+        subgroup: group || undefined,
         // The English name and group stay searchable in every locale, like the
         // English keywords on the fixed commands.
         keywords: `${tool.name} ${group} ${tool.group ?? ""} ${idWords(tool.id)} ${catalog} tool`,

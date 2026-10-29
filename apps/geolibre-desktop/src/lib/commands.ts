@@ -27,6 +27,8 @@ export interface Command {
   title: string;
   /** Grouping label (e.g. "Project", "Add Data"). */
   group: string;
+  /** Sub-group inside a tool family (e.g. "Overlay"), used by the Processing Toolbox tree. */
+  subgroup?: string;
   /** Extra search terms that should match this command in the palette. */
   keywords?: string;
   /** Optional global hotkey that triggers `run` without opening the palette. */

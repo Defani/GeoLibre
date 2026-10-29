@@ -11,7 +11,8 @@ import {
   DialogDescription,
   Label,
 } from "@geolibre/ui";
-import { Eye, EyeOff, GripVertical, Layers, MoreHorizontal, Palette } from "lucide-react";
+import { GripVertical, Layers, MoreHorizontal, Palette } from "lucide-react";
+import { TocCheckbox } from "./LayerTocLegend";
 import type { ThemeMode } from "../../../hooks/useThemeMode";
 import { BACKGROUND_SELECTION_ID } from "./layer-panel-utils";
 import { LayerOpacitySlider } from "./LayerOpacitySlider";
@@ -44,10 +45,10 @@ export function BackgroundLayerRow({
   const showDetails = !compactLayerList || selected;
   return (
     <div
-      className={`rounded-md border transition-colors ${showDetails ? "p-2" : "px-2 py-0.5"} ${
+      className={`toc-row px-1 py-px ${
         selected
-          ? "border-primary bg-primary/5"
-          : "border-border bg-background hover:border-muted-foreground/40 hover:bg-muted/20"
+          ? "bg-[#cce8ff] outline outline-1 outline-[#99d1ff] dark:bg-primary/20 dark:outline-primary/40"
+          : "hover:bg-[#e5f1fb] dark:hover:bg-accent/60"
       }`}
       title={t("layers.doubleClickToChangeBackground")}
       // A listitem like the layer rows, not a button wrapping the card's own
@@ -62,7 +63,7 @@ export function BackgroundLayerRow({
       <div className="flex items-center gap-1">
         <span
           title={t("layers.backgroundCannotReorder")}
-          className="rounded p-0.5 text-muted-foreground/50"
+          className="toc-grip rounded p-0.5 text-muted-foreground/50"
         >
           <GripVertical className="h-3.5 w-3.5" />
         </span>
@@ -76,11 +77,7 @@ export function BackgroundLayerRow({
             setBasemapVisible(!basemapVisible);
           }}
         >
-          {basemapVisible ? (
-            <Eye className="h-3.5 w-3.5" />
-          ) : (
-            <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
-          )}
+          <TocCheckbox checked={basemapVisible} />
         </button>
         <Layers className="h-3.5 w-3.5 text-muted-foreground" />
         {/* Selects the background; its click bubbles to the card's handler. */}
@@ -123,7 +120,7 @@ export function BackgroundLayerRow({
           <MoreHorizontal className="h-3.5 w-3.5" />
         </Button>
       </div>
-      {showDetails && (
+      {showDetails && false && (
         <LayerOpacitySlider
           label={t("layers.opacity")}
           ariaLabel={t("layers.backgroundOpacity")}

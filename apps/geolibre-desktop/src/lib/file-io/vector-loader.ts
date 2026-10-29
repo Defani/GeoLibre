@@ -4,6 +4,8 @@
  * duckdb-rs fast path. Dispatches to the format readers by extension.
  */
 
+import { openTiledVectorLayer, shouldOpenTiled } from "../tiled-vector";
+import { getPerformanceSettings } from "../performance-settings";
 import { hasPathTraversal } from "@geolibre/core";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -120,6 +122,7 @@ async function readLocalFileTextOrEmpty(path: string): Promise<string> {
 interface NativeDuckDbVectorInvokeOptions {
   layer?: string;
   overrideSourceCrs?: string;
+  simplify?: "auto" | "off" | "strong";
 }
 
 interface NativeDuckDbVectorAttempt {
@@ -135,6 +138,8 @@ function nativeDuckDbInvokeOptions(
     ...(options?.overrideSourceCrs?.trim()
       ? { overrideSourceCrs: options.overrideSourceCrs.trim() }
       : {}),
+    // Defani edition: Settings › Performance › large-file simplification.
+    simplify: getPerformanceSettings().vectorSimplify,
   };
 }
 
@@ -348,6 +353,15 @@ export async function pickVectorFilesWithSidecars(): Promise<PickedVectorFile[]>
   const paths = selectedPaths.filter(isVectorFileName);
   const picked: PickedVectorFile[] = [];
   for (const path of paths) {
+    // Defani edition: a large file opens as native tiles, never read into memory.
+    if (await shouldOpenTiled(path)) {
+      try {
+        await openTiledVectorLayer(path);
+        continue;
+      } catch (error) {
+        console.warn("[GeoLibre] Native tiles failed; loading the file normally.", error);
+      }
+    }
     // Read each pick independently so one unreadable file (e.g. moved between
     // pick and read, or an unreadable sidecar) does not abandon the rest.
     try {

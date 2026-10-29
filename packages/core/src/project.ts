@@ -1523,10 +1523,11 @@ function normalizeProjectPreferences(preferences: unknown): ProjectPreferences {
         (map as Partial<ProjectPreferences["map"]>).renderWorldCopies,
         true,
       ),
+      // Defani edition: flat (Mercator) unless a project asks for the globe.
       projection:
-        (map as Partial<ProjectPreferences["map"]>).projection === "mercator"
-          ? "mercator"
-          : "globe",
+        (map as Partial<ProjectPreferences["map"]>).projection === "globe"
+          ? "globe"
+          : "mercator",
       // Coerce unknown/missing bodies to Earth so measurements never break.
       ellipsoidId: getEllipsoid((map as Partial<ProjectPreferences["map"]>).ellipsoidId).id,
       scaleUnit: normalizeScaleUnit((map as Partial<ProjectPreferences["map"]>).scaleUnit),

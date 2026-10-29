@@ -3267,7 +3267,7 @@ export class CesiumLayerSync {
     // no global alpha). A later opacity change re-applies this alpha in place
     // (applyGeoJsonStyle) rather than reloading the whole data source.
     const opacity = this.effectiveOpacity(entry);
-    const fillAlpha = (style.fillOpacity ?? 0.6) * opacity;
+    const fillAlpha = (style.fillOpacity ?? 1) * opacity;
     const extOpacity =
       (Number.isFinite(style.extrusionOpacity) ? (style.extrusionOpacity as number) : 0.8) *
       opacity;

@@ -7,7 +7,11 @@ import type { LayoutOptions } from "../../hooks/useLayoutOptions";
 import { OBIA_PANEL_ID } from "../../lib/obia/obia-panel";
 import { CommentsPanel } from "../comments/CommentsPanel";
 import { BrowserPanel } from "../panels/BrowserPanel";
-import { ObiaWorkbenchPanel } from "./desktopShellLazyPanels";
+import { ObiaWorkbenchPanel, SqlWorkspacePanel } from "./desktopShellLazyPanels";
+import { SQL_PANEL_ID } from "../../hooks/useRegisterSqlPanel";
+import { PROCESSING_TOOLBOX_PANEL_ID } from "../../lib/processing-toolbox";
+import { getNativePanel } from "../../lib/native-panels";
+import { ProcessingToolboxPanel } from "../panels/ProcessingToolboxPanel";
 
 type BrowserPanelProps = ComponentProps<typeof BrowserPanel>;
 type CommentsPanelProps = ComponentProps<typeof CommentsPanel>;
@@ -17,7 +21,7 @@ interface RightDockPortalsProps {
   layoutOptions: Pick<LayoutOptions, "panelsHidden" | "viewer">;
   mapControllerRef: React.RefObject<MapEngine | null>;
   /** The dedicated content hosts from `useRightPanelHost`. */
-  hosts: { browser: HTMLElement; comments: HTMLElement; obia: HTMLElement };
+  hosts: { browser: HTMLElement; comments: HTMLElement; obia: HTMLElement; sql: HTMLElement; toolbox: HTMLElement; native: HTMLElement };
   browser: Omit<BrowserPanelProps, "mapControllerRef">;
   comments: Omit<CommentsPanelProps, "mapControllerRef">;
 }
@@ -56,6 +60,27 @@ export function RightDockPortals({
         <ObiaWorkbenchPanel mapControllerRef={mapControllerRef} />
       </Suspense>,
       hosts.obia,
+    );
+  }
+  if (activePanelId === SQL_PANEL_ID && !layoutOptions.viewer) {
+    return createPortal(
+      <Suspense fallback={null}>
+        <SqlWorkspacePanel variant="sidebar" />
+      </Suspense>,
+      hosts.sql,
+    );
+  }
+  if (activePanelId === PROCESSING_TOOLBOX_PANEL_ID && !layoutOptions.viewer) {
+    return createPortal(<ProcessingToolboxPanel />, hosts.toolbox);
+  }
+  const nativePanel = getNativePanel(activePanelId);
+  if (nativePanel && !layoutOptions.viewer) {
+    const Body = nativePanel.component;
+    return createPortal(
+      <Suspense fallback={null}>
+        <Body />
+      </Suspense>,
+      hosts.native,
     );
   }
   return null;

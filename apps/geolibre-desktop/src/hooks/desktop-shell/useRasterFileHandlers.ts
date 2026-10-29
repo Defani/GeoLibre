@@ -113,17 +113,14 @@ export function useRasterFileHandlers(
           notify.warning(t("raster.cogConvertTooLarge", { name }));
           return;
         }
-        if (!bytesAreRemote) {
-          // Local file: pick the prompt by size now that the header is cheap to
-          // read, then confirm once. (A remote source already confirmed above.)
-          const message =
-            samples > LARGE_BROWSER_COG_CONVERSION_SAMPLES
-              ? t("raster.cogConvertLargeConfirm", {
-                  name,
-                  width: info.width,
-                  height: info.height,
-                })
-              : t("raster.cogConvertConfirm", { name });
+        // Defani edition: a local striped GeoTIFF of normal size is converted to a
+        // COG silently (like QGIS, it just opens); only a very large one asks first.
+        if (!bytesAreRemote && samples > LARGE_BROWSER_COG_CONVERSION_SAMPLES) {
+          const message = t("raster.cogConvertLargeConfirm", {
+            name,
+            width: info.width,
+            height: info.height,
+          });
           if (!window.confirm(message)) return;
         }
         const cog = await convertGeoTiffToCog(bytes);

@@ -8,14 +8,19 @@
  * path.
  */
 
+import { EXTRA_COLOR_RAMPS } from "./color-ramp-extra";
+
 export type ColorRamp = {
   value: string;
   label: string;
   colors: readonly string[];
 };
 
-/** The built-in color ramps offered by the style panels. */
-export const VECTOR_COLOR_RAMPS: readonly ColorRamp[] = [
+/**
+ * The upstream ramps. Their `value`s match deck.gl-raster colormap names, so
+ * raster render paths (Zarr) stay on this list.
+ */
+export const RASTER_SAFE_COLOR_RAMPS: readonly ColorRamp[] = [
   {
     value: "viridis",
     label: "Viridis",
@@ -117,6 +122,9 @@ export const VECTOR_COLOR_RAMPS: readonly ColorRamp[] = [
     colors: ["#000000", "#ffffff"],
   },
 ] as const;
+
+/** Every ramp offered by the vector style panels and print layouts (100). */
+export const VECTOR_COLOR_RAMPS: readonly ColorRamp[] = [...RASTER_SAFE_COLOR_RAMPS, ...EXTRA_COLOR_RAMPS];
 
 /**
  * Resolves a ramp definition by name, falling back to the first ramp when the

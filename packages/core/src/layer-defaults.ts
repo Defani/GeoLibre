@@ -156,11 +156,11 @@ export function dominantGeometry(geojson: FeatureCollection | undefined): Domina
  */
 const GEOMETRY_DEFAULTS: Record<DominantGeometry, Partial<LayerStyle>> = {
   // Solid and slightly smaller: a point is read as a dot, not a translucent blob.
-  point: { circleRadius: 5, fillOpacity: 0.9, strokeWidth: 1 },
+  point: { circleRadius: 5, fillOpacity: 1, strokeWidth: 1 },
   // A line's stroke *is* the symbol, so it carries the weight.
   line: { strokeWidth: 2.5, fillOpacity: 1 },
   // Translucent enough that the basemap underneath stays readable.
-  polygon: { fillOpacity: 0.45, strokeWidth: 1.5 },
+  polygon: { fillOpacity: 1, strokeWidth: 1.5 },
   mixed: {},
 };
 

@@ -1,3 +1,4 @@
+import { ProHelpIcon } from "./ProIcons";
 import {
   Button,
   DropdownMenu,
@@ -7,18 +8,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@geolibre/ui";
-import {
-  Bug,
-  CircleHelp,
-  FolderGit2,
-  Globe,
-  Info,
-  Keyboard,
-  MessageSquare,
-  RefreshCw,
-  Search,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Bug, FolderGit2, Globe, Info, Keyboard, MessageSquare, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import { ClearCacheIcon, openClearCacheDialog } from "../ClearCacheDialog";
 import { useTranslation } from "react-i18next";
 import { useDesktopSettingsStore } from "../../../hooks/useDesktopSettings";
 import { IS_STORE_BUILD } from "../../../lib/updates";
@@ -85,7 +76,7 @@ export function HelpMenu({
           size={chrome.buttonSize}
           aria-label={t("toolbar.menu.help")}
         >
-          <CircleHelp className={chrome.iconClassName} />
+          <ProHelpIcon className={chrome.iconClassName} />
           {chrome.renderLabel(t("toolbar.menu.help"))}
         </Button>
       </DropdownMenuTrigger>
@@ -134,6 +125,11 @@ export function HelpMenu({
             show("help.feedback") ||
             show("help.checkForUpdates") ||
             show("help.about")) && <DropdownMenuSeparator />}
+        {/* Defani edition: free cached storage. */}
+        <DropdownMenuItem onSelect={() => openClearCacheDialog()}>
+          <span className="me-2 inline-flex"><ClearCacheIcon size={16} /></span>
+          Clear Cache…
+        </DropdownMenuItem>
         {show("help.diagnostics") && (
           <DropdownMenuItem onSelect={onOpenDiagnostics}>
             <Bug className="me-2 h-3.5 w-3.5" />

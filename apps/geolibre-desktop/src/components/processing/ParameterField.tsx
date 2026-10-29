@@ -60,7 +60,7 @@ export function ParameterField({
           ))}
         </Select>
         {param.description ? (
-          <p className="text-xs text-muted-foreground">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
         ) : null}
       </div>
     );
@@ -94,7 +94,7 @@ export function ParameterField({
           </p>
         ) : null}
         {param.description ? (
-          <p className="text-xs text-muted-foreground">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
         ) : null}
       </div>
     );
@@ -123,7 +123,7 @@ export function ParameterField({
           ))}
         </Select>
         {param.description ? (
-          <p className="text-xs text-muted-foreground">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
         ) : null}
       </div>
     );
@@ -167,7 +167,7 @@ export function ParameterField({
           onChange={(e) => onChange(e.target.value)}
         />
         {param.description ? (
-          <p className="text-xs text-muted-foreground">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
         ) : null}
       </div>
     );
@@ -194,7 +194,7 @@ export function ParameterField({
           ))}
         </Select>
         {param.description ? (
-          <p className="text-xs text-muted-foreground">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
         ) : null}
       </div>
     );
@@ -214,7 +214,7 @@ export function ParameterField({
           {param.label}
         </label>
         {param.description ? (
-          <p className="text-xs text-muted-foreground ps-6">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground ps-6">{param.description}</p>
         ) : null}
       </div>
     );
@@ -248,7 +248,7 @@ export function ParameterField({
         onChange={(e) => onChange(e.target.value)}
       />
       {param.description ? (
-        <p className="text-xs text-muted-foreground">{param.description}</p>
+        <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
       ) : null}
     </div>
   );

@@ -1,3 +1,8 @@
+import "./lib/native-dialog-polyfill";
+import "./styles/symbology.css";
+import "./styles/start.css";
+import "./styles/layout-ribbon.css";
+import "./styles/add-data.css";
 import "./lib/symbol-dispose-polyfill";
 import "./lib/crypto-random-uuid-polyfill";
 // Must precede any Map construction (see the module docs).

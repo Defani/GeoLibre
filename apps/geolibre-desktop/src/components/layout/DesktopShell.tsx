@@ -1,4 +1,7 @@
 // @refresh reset
+import { AddDataDialog } from "../data/AddDataDialog";
+import { LayerPropertiesWindow } from "../panels/LayerPropertiesWindow";
+import { AboutDialog, PublishOpenRecent } from "./ProjectBackstage";
 import { shouldZoomToNewLayers, useAppStore } from "@geolibre/core";
 import type { MapDiagnosticEvent, MapEngine } from "@geolibre/map";
 import { MapCanvas, rendererCapabilities } from "@geolibre/map";
@@ -22,8 +25,28 @@ import {
 import { BROWSER_PANEL_ID, useRegisterBrowserPanel } from "../../hooks/useRegisterBrowserPanel";
 import { COMMENTS_PANEL_ID, useRegisterCommentsPanel } from "../../hooks/useRegisterCommentsPanel";
 import { useRegisterObiaPanel } from "../../hooks/useRegisterObiaPanel";
+import { useRegisterSqlPanel } from "../../hooks/useRegisterSqlPanel";
+import { useRegisterProcessingToolbox } from "../../hooks/useRegisterProcessingToolbox";
+import { useRegisterNativePanels } from "../../hooks/useRegisterNativePanels";
 import { MountWhenOpened } from "./MountWhenOpened";
 import { RightDockPortals } from "./RightDockPortals";
+import { LayoutViewHost } from "./LayoutViewHost";
+import { ProViewTabs } from "./ProViewTabs";
+import { ProRibbon } from "./ProRibbon";
+import { useTiledVectorRuntime } from "../../lib/tiled-vector";
+import { useLineStyleSync } from "../../lib/line-style-sync";
+import { useFlatMapMigration } from "../../lib/flat-map-migration";
+import { publishEditorActions } from "../../lib/editor-actions";
+import { publishShellActions } from "../../lib/shell-actions";
+import { activateINaturalist } from "../../lib/native-inaturalist";
+import { ProcessToasts } from "./ProcessToasts";
+import { ClearCacheDialog } from "./ClearCacheDialog";
+import { StartScreen } from "./StartScreen";
+import { RasterCalculatorWindow } from "../processing/RasterCalculatorWindow";
+import { AnalysisWindows } from "../processing/AnalysisWindows";
+import { AnalysisToolkitWindow } from "../processing/AnalysisToolkitWindow";
+import { pixelRatioFor, usePerformanceSettings } from "../../lib/performance-settings";
+import { ManageLayersToolbar } from "./ManageLayersToolbar";
 import { CommentMapOverlay } from "../comments/CommentMapOverlay";
 import { useCommentTool } from "../comments/useCommentTool";
 import { AddCommentDialog } from "../comments/AddCommentDialog";
@@ -123,6 +146,7 @@ import { ProjectHistoryDialog } from "./ProjectHistoryDialog";
 import { ProjectRecoveryDialog } from "./ProjectRecoveryDialog";
 import { StatusBar } from "./StatusBar";
 import { TopToolbar } from "./TopToolbar";
+import { startKlhkAutoStyle } from "../../lib/klhk-auto-style";
 import type { LayoutOptions } from "../../hooks/useLayoutOptions";
 import type { ThemeMode } from "../../hooks/useThemeMode";
 import type { ProjectUrlLoadState } from "../../hooks/useProjectUrlLoader";
@@ -144,7 +168,6 @@ import {
   SegmentEverythingPanel,
   SelectByExpressionDialog,
   SelectByLocationDialog,
-  SqlWorkspacePanel,
   StatisticsToolsDialog,
   StyleManagerPanel,
   VectorToolsDialog,
@@ -264,13 +287,14 @@ export function DesktopShell({
   const layers = useAppStore((s) => s.layers);
   const pythonConsoleOpen = useAppStore((s) => s.ui.pythonConsoleOpen);
   const setPythonConsoleOpen = useAppStore((s) => s.setPythonConsoleOpen);
-  const sqlWorkspaceOpen = useAppStore((s) => s.ui.sqlWorkspaceOpen);
-  const setSqlWorkspaceOpen = useAppStore((s) => s.setSqlWorkspaceOpen);
   // Register the Browser as a movable/dockable right panel; its body is portaled
   // into a dedicated content host (below) that the dock slots adopt.
   useRegisterBrowserPanel();
   useRegisterCommentsPanel();
   useRegisterObiaPanel();
+  useRegisterSqlPanel();
+  useRegisterProcessingToolbox();
+  useRegisterNativePanels();
   // One shared project-file-actions instance for both the toolbar and the
   // Browser panel, so their "open recent" calls coordinate their aborts (two
   // instances would race). Lifted here for the same reason as `collaboration`.
@@ -308,6 +332,9 @@ export function DesktopShell({
     commentsContentEl,
     dockContentEl,
     obiaContentEl,
+    sqlContentEl,
+    toolboxContentEl,
+    nativeContentEl,
     pluginPanelWidth,
     replaceLayersPanelIds,
     replaceStylePanelIds,
@@ -377,6 +404,12 @@ export function DesktopShell({
   useTerrainRestore(mapControllerRef, mapReadyGeneration, projectGeneration);
   useScriptControlRestore(mapControllerRef, mapReadyGeneration, projectGeneration);
   useProjectInteractionRestore(mapControllerRef, mapReadyGeneration, projectGeneration);
+  // Defani edition: the header Editor menu drives the same geometry editor.
+  useEffect(() => {
+    publishEditorActions({ toggle: handleToggleGeometryEdit, cancel: handleCancelGeometryEdit });
+  });
+  // KLHK layers (SIGAP names) get the official KLHK symbology when added.
+  useEffect(() => startKlhkAutoStyle(), []);
   const [stylePanelOpenRequest, setStylePanelOpenRequest] = useState(0);
   const openStylePanel = useCallback(() => {
     setStylePanelOpenRequest((request) => request + 1);
@@ -539,6 +572,32 @@ export function DesktopShell({
     setCrsWarning,
     t,
   });
+  // Defani edition: the iNaturalist Extractor is built in; it activates once
+  // the map engine is ready (and again for a new engine).
+  useEffect(() => {
+    if (layoutOptions.viewer || !mapControllerRef.current?.getMap?.()) return;
+    activateINaturalist(createAppAPI(mapControllerRef)).catch((error: unknown) =>
+      console.error("[iNaturalist] could not start the built-in extractor", error),
+    );
+  }, [mapReadyGeneration, layoutOptions.viewer, mapControllerRef]);
+  // Defani edition: fade the startup splash (index.html) once the map is up.
+  useEffect(() => {
+    if (mapReadyGeneration > 0) (window as { __tfgHideSplash?: () => void }).__tfgHideSplash?.();
+  }, [mapReadyGeneration]);
+  // Defani edition: Settings › Performance › Map rendering (pixel ratio).
+  const renderQuality = usePerformanceSettings((s) => s.renderQuality);
+  useEffect(() => {
+    const map = mapControllerRef.current?.getMap?.() as { setPixelRatio?: (ratio: number) => void } | null;
+    map?.setPixelRatio?.(pixelRatioFor(renderQuality));
+  }, [renderQuality, mapReadyGeneration, mapControllerRef]);
+  // Defani edition: native panels (SDM, ...) add files like a drop does.
+  useEffect(() => {
+    publishShellActions({
+      addFilePath,
+      addDroppedRasters,
+      getAppApi: () => createAppAPI(mapControllerRef),
+    });
+  }, [addFilePath, addDroppedRasters, mapControllerRef]);
   const { handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDraggingFiles } =
     useFileDrop({
       layoutOptions,
@@ -553,6 +612,11 @@ export function DesktopShell({
       addDroppedPhotos,
       t,
     });
+
+  // Defani edition: large vector files as native tiles (progress, restore, cleanup).
+  useTiledVectorRuntime();
+  useLineStyleSync();
+  useFlatMapMigration();
 
   return (
     <div
@@ -590,12 +654,22 @@ export function DesktopShell({
           />
         </SectionErrorBoundary>
       ) : null}
+      {!layoutOptions.viewer && layoutOptions.toolbarVisible ? <ProRibbon /> : null}
       <div data-workspace-row="" className="relative flex min-h-0 flex-1 flex-col md:flex-row">
+        {/* Defani edition: QGIS-style vertical Manage Layers toolbar. */}
+        {!layoutOptions.viewer ? <ManageLayersToolbar /> : null}
         <RightDockPortals
           activePanelId={activePanelId}
           layoutOptions={layoutOptions}
           mapControllerRef={mapControllerRef}
-          hosts={{ browser: browserContentEl, comments: commentsContentEl, obia: obiaContentEl }}
+          hosts={{
+            browser: browserContentEl,
+            comments: commentsContentEl,
+            obia: obiaContentEl,
+            sql: sqlContentEl,
+            toolbox: toolboxContentEl,
+            native: nativeContentEl,
+          }}
           browser={{
             onOpenRecentProject: projectFiles.handleOpenRecent,
             onAddFilePath: addFilePath,
@@ -738,7 +812,7 @@ export function DesktopShell({
         <main
           ref={mapAreaRef}
           // `isolate` creates a stacking context so map-panel z-indexes (up to 10000) stay below body-portaled dialogs. See #451.
-          className={`relative isolate min-w-0 flex-1 overflow-hidden ${
+          className={`relative isolate flex min-w-0 flex-1 flex-col overflow-hidden ${
             layoutOptions.compact ? "min-h-0" : "min-h-72 md:min-h-0"
           }`}
         >
@@ -748,6 +822,9 @@ export function DesktopShell({
               chrome-free visual layout. Placed inside the main landmark so it
               is not flagged as content outside a landmark. */}
           <h1 className="sr-only">{t("shell.workspaceTitle")}</h1>
+          {/* Defani edition: ArcGIS Pro-style view tabs above the map. */}
+          {!layoutOptions.viewer ? <ProViewTabs /> : null}
+          <div className="relative min-h-0 flex-1">
           <SectionErrorBoundary
             label="Map"
             displayName={t("shell.section.map")}
@@ -903,6 +980,12 @@ export function DesktopShell({
               </MapGrid>
             </CvdPreview>
           </SectionErrorBoundary>
+          {/* Defani edition: ArcMap-style Data View / Layout View. */}
+          {!layoutOptions.viewer ? (
+            <SilentErrorBoundary label="Layout View">
+              <LayoutViewHost mapControllerRef={mapControllerRef} />
+            </SilentErrorBoundary>
+          ) : null}
           <SectionErrorBoundary
             label="Plugin floating panels"
             displayName={t("shell.section.pluginFloatingPanels")}
@@ -986,6 +1069,7 @@ export function DesktopShell({
               api={collaboration}
             />
           )}
+          </div>
         </main>
         {/* Same as the left dock: a map-only / hidden-panels embed skips the
             entire right side-dock (Style, plugin panels, and their shared rail). */}
@@ -1125,17 +1209,6 @@ export function DesktopShell({
         >
           <Suspense fallback={null}>
             <PythonConsolePanel mapControllerRef={mapControllerRef} />
-          </Suspense>
-        </SectionErrorBoundary>
-      ) : null}
-      {sqlWorkspaceOpen ? (
-        <SectionErrorBoundary
-          label="SQL workspace"
-          displayName={t("shell.section.sqlWorkspace")}
-          onClose={() => setSqlWorkspaceOpen(false)}
-        >
-          <Suspense fallback={null}>
-            <SqlWorkspacePanel />
           </Suspense>
         </SectionErrorBoundary>
       ) : null}
@@ -1328,6 +1401,24 @@ export function DesktopShell({
           onCancel={commentTool.cancelPendingComment}
         />
       )}
+      {/* Defani edition: processing progress / error cards. */}
+      <ProcessToasts />
+      <ClearCacheDialog />
+      <RasterCalculatorWindow />
+      <AnalysisWindows />
+      <AnalysisToolkitWindow />
+      {!layoutOptions.viewer ? (
+        <>
+        <PublishOpenRecent open={(path) => void projectFiles.handleOpenRecent(path)} />
+        <AboutDialog />
+        <AddDataDialog />
+        <LayerPropertiesWindow mapControllerRef={mapControllerRef} mapReadyGeneration={mapReadyGeneration} />
+        <StartScreen
+          onOpenProject={() => void projectFiles.handleOpenFromFile()}
+          onOpenRecent={(path) => void projectFiles.handleOpenRecent(path)}
+        />
+        </>
+      ) : null}
     </div>
   );
 }

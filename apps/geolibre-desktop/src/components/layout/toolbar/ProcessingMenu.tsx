@@ -1,3 +1,4 @@
+import { ProProcessingIcon } from "./ProIcons";
 import { type NetworkToolKind, useAppCapability, useAppStore } from "@geolibre/core";
 import { isEarthEngineAvailable } from "@geolibre/plugins";
 import {
@@ -12,7 +13,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@geolibre/ui";
-import { Wrench } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isMobile } from "../../../lib/is-mobile";
@@ -31,6 +31,8 @@ import { useMapCapabilities } from "../../../hooks/useMapCapabilities";
 import { PluginMenuContributions } from "./PluginMenuContributions";
 import type { Command } from "../../../lib/commands";
 import { ProcessingMenuSearch } from "./ProcessingMenuSearch";
+import { openProcessingToolbox } from "../../../lib/processing-toolbox";
+import { PROCESSING_TOOLBOX_REPLACES_MENU } from "../../../lib/custom-build";
 
 // aria-describedby targets for the "your role does not allow this" explanations.
 // One per privilege rather than one per item: several denied entries share a
@@ -195,6 +197,23 @@ export function ProcessingMenu({
     handleOpenChange(false);
   };
 
+  // Defani edition: the Processing button opens the Processing Toolbox in the
+  // right sidebar (QGIS style) instead of the drop-down menu.
+  if (PROCESSING_TOOLBOX_REPLACES_MENU) {
+    return (
+      <Button
+        className={chrome.buttonClass}
+        variant="ghost"
+        size={chrome.buttonSize}
+        aria-label={t("toolbar.menu.processing")}
+        onClick={openProcessingToolbox}
+      >
+        <ProProcessingIcon className={chrome.iconClassName} />
+        {chrome.renderLabel(t("toolbar.menu.processing"))}
+      </Button>
+    );
+  }
+
   return (
     <DropdownMenu open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
@@ -204,7 +223,7 @@ export function ProcessingMenu({
           size={chrome.buttonSize}
           aria-label={t("toolbar.menu.processing")}
         >
-          <Wrench className={chrome.iconClassName} />
+          <ProProcessingIcon className={chrome.iconClassName} />
           {chrome.renderLabel(t("toolbar.menu.processing"))}
         </Button>
       </DropdownMenuTrigger>

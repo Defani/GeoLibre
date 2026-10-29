@@ -1,3 +1,4 @@
+import { ProControlsIcon } from "./ProIcons";
 import { useAppStore } from "@geolibre/core";
 import { rendererCapabilities, TERRAIN_SETTINGS_EVENT } from "@geolibre/map";
 import {
@@ -46,7 +47,7 @@ import {
   DropdownMenuTrigger,
   Slider,
 } from "@geolibre/ui";
-import { Clapperboard, ClipboardList, LocateFixed, SlidersHorizontal, Video } from "lucide-react";
+import { Clapperboard, ClipboardList, LocateFixed, Video } from "lucide-react";
 import { type MouseEvent as ReactMouseEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ToolbarPanels } from "../../../hooks/useToolbarPanels";
@@ -258,7 +259,7 @@ export function ControlsMenu({
             size={chrome.buttonSize}
             aria-label={t("toolbar.menu.controls")}
           >
-            <SlidersHorizontal className={chrome.iconClassName} />
+            <ProControlsIcon className={chrome.iconClassName} />
             {chrome.renderLabel(t("toolbar.menu.controls"))}
           </Button>
         </DropdownMenuTrigger>

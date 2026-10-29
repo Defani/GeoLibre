@@ -10,7 +10,6 @@ import {
   maxResolutionForDggs,
   type AlgorithmParameter,
   type GeometryFamily,
-  type ProcessingAlgorithm,
   type ProcessingContext,
   type VectorToolRequest,
   type VectorToolResult,
@@ -22,24 +21,20 @@ import { createDuckDbCapability } from "../../lib/duckdb-processing";
 import { beginProcessingRun, type ProcessingRunTracker } from "../../lib/processing-history";
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   Label,
-  ScrollArea,
   Select,
   cn,
 } from "@geolibre/ui";
 import {
   translateParameter,
   translateToolDescription,
-  translateToolGroup,
   translateToolName,
 } from "../../lib/processing-tool-i18n";
 import { ParameterField } from "./ParameterField";
-import { Loader2, Play, Server, Square } from "lucide-react";
+import { Cog, Loader2, Play, Server, Square, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { useProcessNotifier } from "../../lib/process-notify";
+import { ParamHelpPane, useParamHelp } from "./ParamHelp";
 import type { FeatureCollection } from "geojson";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,22 +51,7 @@ interface RunSink {
   addResultLayer: (name: string, fc: FeatureCollection) => void;
 }
 
-/** Tools grouped by their `group` label, preserving registry order. */
-function groupedTools(): { group: string; tools: ProcessingAlgorithm[] }[] {
-  const groups: { group: string; tools: ProcessingAlgorithm[] }[] = [];
-  for (const tool of VECTOR_TOOLS) {
-    const label = tool.group ?? "Tools";
-    let entry = groups.find((g) => g.group === label);
-    if (!entry) {
-      entry = { group: label, tools: [] };
-      groups.push(entry);
-    }
-    entry.tools.push(tool);
-  }
-  return groups;
-}
-
-export function VectorToolsDialog({ mapControllerRef }: VectorToolsDialogProps): ReactElement {
+export function VectorToolsDialog({ mapControllerRef }: VectorToolsDialogProps): ReactElement | null {
   const { t } = useTranslation();
   const openTool = useAppStore((s) => s.ui.vectorToolOpen);
   const setVectorToolOpen = useAppStore((s) => s.setVectorToolOpen);
@@ -91,6 +71,18 @@ export function VectorToolsDialog({ mapControllerRef }: VectorToolsDialogProps):
   const [sidecarAvailable, setSidecarAvailable] = useState<boolean | null>(null);
   const [autoRunPending, setAutoRunPending] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setTab] = useState<"parameters" | "log">("parameters");
+  const paramHelp = useParamHelp();
+  // Each tool opens on its Parameters tab, like QGIS.
+  useEffect(() => {
+    if (openTool !== null) setTab("parameters");
+    paramHelp.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openTool]);
+  const [winPos, setWinPos] = useState(() => ({
+    x: Math.max(16, Math.round(window.innerWidth / 2 - 390)),
+    y: Math.max(16, Math.round(window.innerHeight / 2 - 260)),
+  }));
   const runTrackerRef = useRef<ProcessingRunTracker | null>(null);
   // Cancels the in-flight run: the Cancel button, closing the dialog, or
   // starting another run. A cancelled run adds no layer, fits no view and is not
@@ -499,57 +491,69 @@ export function VectorToolsDialog({ mapControllerRef }: VectorToolsDialogProps):
     void handleRunRef.current();
   }, [autoRunPending]);
 
-  const groups = useMemo(groupedTools, []);
+  const close = () => {
+    handleCancel();
+    setVectorToolOpen(null);
+  };
+  const toolName = translateToolName(t, "vector", tool);
+  const failed = !running && /^error/i.test(log[log.length - 1] ?? "");
+  useProcessNotifier(toolName, running, failed, failed ? log[log.length - 1] : null);
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(next: boolean) => {
-        if (!next) {
-          handleCancel();
-          setVectorToolOpen(null);
-        }
+  // QGIS-style algorithm window: floating (the map stays usable), draggable by
+  // its title bar, with Parameters / Log tabs, a help pane, a progress bar and
+  // Run / Close buttons along the bottom.
+  if (!open) return null;
+  return createPortal(
+    <div
+      role="dialog"
+      aria-label={toolName}
+      className="qgis-alg fixed z-[45] flex h-[520px] max-h-[90vh] w-[780px] max-w-[96vw] flex-col overflow-hidden rounded-md border bg-background text-[13px] shadow-2xl"
+      style={{ left: winPos.x, top: winPos.y }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") close();
       }}
     >
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{t("processing.vectorTools.title")}</DialogTitle>
-          <DialogDescription>{t("processing.vectorTools.description")}</DialogDescription>
-        </DialogHeader>
+      <div
+        className="flex cursor-move select-none items-center gap-2 border-b bg-muted/70 px-3 py-1.5"
+        onPointerDown={(e) => {
+          if ((e.target as HTMLElement).closest("button")) return;
+          const start = { x: e.clientX - winPos.x, y: e.clientY - winPos.y };
+          const move = (ev: PointerEvent) =>
+            setWinPos({ x: Math.max(0, ev.clientX - start.x), y: Math.max(0, ev.clientY - start.y) });
+          const up = () => {
+            window.removeEventListener("pointermove", move);
+            window.removeEventListener("pointerup", up);
+          };
+          window.addEventListener("pointermove", move);
+          window.addEventListener("pointerup", up);
+        }}
+      >
+        <Cog className="h-4 w-4 text-[#4a8a3c]" />
+        <span className="flex-1 truncate font-semibold">{toolName}</span>
+        <button type="button" aria-label="Close" className="rounded p-0.5 hover:bg-accent" onClick={close}>
+          <X className="h-4 w-4" />
+        </button>
+      </div>
 
-        <div className="flex gap-4">
-          {/* Tool list */}
-          <ScrollArea className="h-[22rem] w-48 shrink-0 rounded-md border">
-            <div className="p-1">
-              {groups.map((group) => (
-                <div key={group.group} className="mb-1">
-                  <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {translateToolGroup(t, group.group)}
-                  </div>
-                  {group.tools.map((entry) => (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      onClick={() => setSelectedId(entry.id)}
-                      className={cn(
-                        "w-full rounded-md px-2 py-1.5 text-start text-sm transition-colors hover:bg-accent",
-                        entry.id === selectedId && "bg-accent font-medium text-accent-foreground",
-                      )}
-                    >
-                      {translateToolName(t, "vector", entry)}
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
+      <div className="flex border-b px-2 pt-1 text-xs">
+        {(["parameters", "log"] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setTab(tab)}
+            className={cn(
+              "-mb-px rounded-t border border-b-0 px-3 py-1",
+              activeTab === tab ? "border-border bg-background font-medium" : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {tab === "parameters" ? "Parameters" : "Log"}
+          </button>
+        ))}
+      </div>
 
-          {/* Parameter form + run + log */}
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <p className="text-sm text-muted-foreground">
-              {translateToolDescription(t, "vector", tool)}
-            </p>
-
+      <div className="flex min-h-0 flex-1">
+        <div className="min-w-0 flex-1 overflow-auto p-3" {...paramHelp.handlers}>
+          {activeTab === "parameters" ? (
             <div className="flex flex-col gap-3">
               {tool.parameters.filter(isParamVisible).map((param) => {
                 // Narrow the resolution spinner to the selected DGGS type's range.
@@ -591,67 +595,46 @@ export function VectorToolsDialog({ mapControllerRef }: VectorToolsDialogProps):
                   />
                 );
               })}
-            </div>
 
-            {tool.supportsSidecar || tool.requiresSidecar ? (
-              <div className="flex flex-col gap-1">
-                <Label className="flex items-center gap-1.5 text-xs">
-                  <Server className="h-3.5 w-3.5" /> {t("processing.vectorTools.engine")}
-                </Label>
-                <Select value={engine} onChange={(e) => setEngine(e.target.value as Engine)}>
-                  {/* requiresSidecar tools (e.g. Reproject) have no working client
-                      path, so don't let the user pick a dead-end engine. */}
-                  <option value="client" disabled={tool.requiresSidecar}>
-                    {t("processing.vectorTools.engineClient")}
-                  </option>
-                  {/* No sidecar engine in the Mac App Store build. */}
-                  {!IS_MAS_BUILD && (
-                    <option value="sidecar">{t("processing.vectorTools.engineSidecar")}</option>
-                  )}
-                  <option value="pyodide">{t("processing.vectorTools.enginePyodide")}</option>
-                </Select>
-                {engine === "sidecar" && sidecarAvailable === null ? (
-                  <p className="text-xs text-muted-foreground">
-                    {t("processing.vectorTools.checkingSidecar")}
-                  </p>
-                ) : null}
-                {engine === "sidecar" && sidecarAvailable === false ? (
-                  <p className="text-xs text-destructive">
-                    {tool.requiresSidecar
-                      ? t("processing.vectorTools.sidecarUnavailablePyodide")
-                      : t("processing.vectorTools.sidecarUnavailableClient")}
-                  </p>
-                ) : null}
-                {engine === "pyodide" ? (
-                  <p className="text-xs text-muted-foreground">
-                    {t("processing.vectorTools.pyodideNote")}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-
-            <div className="flex gap-2">
-              <Button
-                onClick={handleRun}
-                disabled={running || (engine === "sidecar" && sidecarAvailable !== true)}
-                className="gap-2"
-              >
-                {running ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-                {t("processing.vectorTools.run")}
-              </Button>
-              {running ? (
-                <Button variant="outline" onClick={handleCancel} className="gap-2">
-                  <Square className="h-4 w-4" />
-                  {t("processing.vectorTools.cancel")}
-                </Button>
+              {tool.supportsSidecar || tool.requiresSidecar ? (
+                <div className="flex flex-col gap-1">
+                  <Label className="flex items-center gap-1.5 text-xs">
+                    <Server className="h-3.5 w-3.5" /> {t("processing.vectorTools.engine")}
+                  </Label>
+                  <Select value={engine} onChange={(e) => setEngine(e.target.value as Engine)}>
+                    {/* requiresSidecar tools (e.g. Reproject) have no working client
+                        path, so don't let the user pick a dead-end engine. */}
+                    <option value="client" disabled={tool.requiresSidecar}>
+                      {t("processing.vectorTools.engineClient")}
+                    </option>
+                    {/* No sidecar engine in the Mac App Store build. */}
+                    {!IS_MAS_BUILD && (
+                      <option value="sidecar">{t("processing.vectorTools.engineSidecar")}</option>
+                    )}
+                    <option value="pyodide">{t("processing.vectorTools.enginePyodide")}</option>
+                  </Select>
+                  {engine === "sidecar" && sidecarAvailable === null ? (
+                    <p className="text-xs text-muted-foreground">
+                      {t("processing.vectorTools.checkingSidecar")}
+                    </p>
+                  ) : null}
+                  {engine === "sidecar" && sidecarAvailable === false ? (
+                    <p className="text-xs text-destructive">
+                      {tool.requiresSidecar
+                        ? t("processing.vectorTools.sidecarUnavailablePyodide")
+                        : t("processing.vectorTools.sidecarUnavailableClient")}
+                    </p>
+                  ) : null}
+                  {engine === "pyodide" ? (
+                    <p className="text-xs text-muted-foreground">
+                      {t("processing.vectorTools.pyodideNote")}
+                    </p>
+                  ) : null}
+                </div>
               ) : null}
             </div>
-
-            <ScrollArea className="h-24 rounded-md border bg-muted/30 p-2 font-mono text-xs">
+          ) : (
+            <div className="h-full rounded border bg-muted/30 p-2 font-mono text-xs">
               {log.length === 0 ? (
                 <span className="text-muted-foreground">
                   {t("processing.vectorTools.outputPlaceholder")}
@@ -664,10 +647,55 @@ export function VectorToolsDialog({ mapControllerRef }: VectorToolsDialogProps):
                 ))
               )}
               <div ref={logEndRef} />
-            </ScrollArea>
-          </div>
+            </div>
+          )}
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Help pane, like the QGIS / ArcGIS tool help: the tool, then the field in focus. */}
+        <ParamHelpPane
+          title={toolName}
+          description={translateToolDescription(t, "vector", tool)}
+          help={paramHelp.help}
+          className="w-[260px] shrink-0 border-s"
+        />
+      </div>
+
+      <div className="flex items-center gap-2 border-t bg-muted/40 px-3 py-2">
+        <div className="relative h-4 min-w-0 flex-1 overflow-hidden rounded-sm border bg-background">
+          <div
+            className={cn(
+              "absolute inset-y-0 left-0 bg-[#4a9a3c] transition-all",
+              running ? "w-1/3 animate-[qgis-progress_1.2s_linear_infinite]" : log.length ? "w-full" : "w-0",
+              failed && "bg-destructive",
+            )}
+          />
+          <span className="absolute inset-0 text-center text-[10px] leading-4">
+            {running ? "Running…" : failed ? "Failed — see Log" : log.length ? "100%" : "0%"}
+          </span>
+        </div>
+        {running ? (
+          <Button variant="outline" size="sm" onClick={handleCancel} className="gap-1.5">
+            <Square className="h-3.5 w-3.5" />
+            {t("processing.vectorTools.cancel")}
+          </Button>
+        ) : null}
+        <Button
+          size="sm"
+          onClick={() => {
+            setTab("log");
+            void handleRun();
+          }}
+          disabled={running || (engine === "sidecar" && sidecarAvailable !== true)}
+          className="gap-1.5"
+        >
+          {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
+          {t("processing.vectorTools.run")}
+        </Button>
+        <Button size="sm" variant="outline" onClick={close}>
+          Close
+        </Button>
+      </div>
+    </div>,
+    document.body,
   );
 }

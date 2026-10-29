@@ -1,3 +1,6 @@
+// Defani edition: native vector tiles for very large layers.
+pub mod tiles;
+
 use chrono::{Duration, NaiveDate, NaiveTime, SecondsFormat, TimeZone, Utc};
 use duckdb::{
     types::{TimeUnit, Value, ValueRef},
@@ -41,6 +44,8 @@ struct NativeVectorOptions {
     extension: String,
     layer: Option<String>,
     override_source_crs: Option<String>,
+    /// Defani edition: "auto" (default), "off" (full detail) or "strong".
+    simplify: Option<String>,
 }
 
 #[derive(Debug)]
@@ -86,8 +91,10 @@ pub async fn load_native_vector_file(
     path: String,
     layer: Option<String>,
     override_source_crs: Option<String>,
+    simplify: Option<String>,
 ) -> Result<serde_json::Value, String> {
-    let options = native_options(path, layer, override_source_crs)?;
+    let mut options = native_options(path, layer, override_source_crs)?;
+    options.simplify = blank_to_none(simplify);
     tauri::async_runtime::spawn_blocking(move || load_native_vector_file_blocking(options))
         .await
         .map_err(|error| format!("Native DuckDB load task failed: {error}"))?
@@ -113,6 +120,7 @@ fn native_options(
         path,
         layer: blank_to_none(layer),
         override_source_crs: blank_to_none(override_source_crs),
+        simplify: None,
     })
 }
 
@@ -230,7 +238,19 @@ fn load_native_vector_file_blocking(
         Some(crs) => Some(crs),
         None => read_source_crs(&conn, &options, geo_metadata.as_ref(), &detected.column),
     };
-    let geometry_json_sql = geometry_geojson_sql(&geometry_expr(&detected), source_crs.as_deref());
+    // Defani edition: a heavy file (a national boundary shapefile of hundreds of
+    // MB) is simplified while it loads, like QGIS's render simplification, so
+    // it opens in seconds instead of shipping every vertex to the webview.
+    let simplify_tolerance =
+        large_file_simplify_tolerance(&options.path, options.simplify.as_deref());
+    let geometry_json_sql = match simplify_tolerance {
+        Some(tolerance) => geometry_geojson_sql_simplified(
+            &geometry_expr(&detected),
+            source_crs.as_deref(),
+            tolerance,
+        ),
+        None => geometry_geojson_sql(&geometry_expr(&detected), source_crs.as_deref()),
+    };
     let mut select_columns: Vec<String> = property_columns
         .iter()
         .map(|column| quote_identifier(column))
@@ -1158,6 +1178,52 @@ fn geometry_geojson_sql(geometry_expression: &str, source_crs: Option<&str>) -> 
         ),
         None => format!("ST_AsGeoJSON({geometry_expression})"),
     }
+}
+
+/// Simplification tolerance (degrees) for a heavy vector file, or `None` for a
+/// file small enough to load at full detail. Sized from the main file plus a
+/// shapefile's `.shp` (the `.dbf`/`.shx` are small).
+fn large_file_simplify_tolerance(path: &str, mode: Option<&str>) -> Option<f64> {
+    let size = std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0);
+    const MB: u64 = 1024 * 1024;
+    match mode {
+        Some("off") => return None,
+        // Settings › Performance › "Strong": simplify from 10 MB, coarser.
+        Some("strong") => {
+            return match size {
+                s if s >= 100 * MB => Some(0.001),
+                s if s >= 10 * MB => Some(0.0003),
+                _ => None,
+            }
+        }
+        _ => {}
+    }
+    match size {
+        s if s >= 300 * MB => Some(0.0005), // ~50 m: national-scale boundaries
+        s if s >= 100 * MB => Some(0.0002), // ~20 m
+        s if s >= 40 * MB => Some(0.00005), // ~5 m
+        _ => None,
+    }
+}
+
+/// Like [`geometry_geojson_sql`], but simplifies each geometry (in WGS84
+/// degrees, after any reprojection) and trims coordinates to 6 decimals.
+fn geometry_geojson_sql_simplified(
+    geometry_expression: &str,
+    source_crs: Option<&str>,
+    tolerance: f64,
+) -> String {
+    let wgs84 = match source_crs {
+        Some(source_crs) => format!(
+            "ST_Transform({geometry_expression}, {}, {}, true)",
+            quote_sql_string(source_crs),
+            quote_sql_string(TARGET_CRS)
+        ),
+        None => geometry_expression.to_string(),
+    };
+    format!(
+        "ST_AsGeoJSON(ST_ReducePrecision(ST_Simplify({wgs84}, {tolerance}), 0.000001))"
+    )
 }
 
 fn row_to_feature(row: &Row<'_>, column_names: &[String]) -> Result<serde_json::Value, String> {

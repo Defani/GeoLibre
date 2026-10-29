@@ -64,9 +64,9 @@ export function LayerPanelHeader({
   const setIdentifyLayer = useAppStore((s) => s.setIdentifyLayer);
   const [compactLayerList, setCompactLayerList] = useCompactLayerList();
   return (
-    <div className="flex items-center justify-between border-b px-3 py-1.5">
-      <span className="text-sm font-semibold">{t("sharedRail.layers")}</span>
-      <div className="flex items-center gap-1">
+    <div className="toc-header flex flex-col gap-0.5 border-b px-2 py-1">
+      <span className="text-sm font-semibold">Contents</span>
+      <div className="flex flex-wrap items-center gap-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

@@ -1,3 +1,4 @@
+import { ProEditIcon } from "./ProIcons";
 import {
   canRedoProjectRestore,
   canUndoProjectRestore,
@@ -17,17 +18,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@geolibre/ui";
-import {
-  FilePlus2,
-  Locate,
-  Pencil,
-  Redo2,
-  Shuffle,
-  SquareDashed,
-  SquareFunction,
-  Undo2,
-  X,
-} from "lucide-react";
+import { FilePlus2, Locate, Redo2, Shuffle, SquareDashed, SquareFunction, Undo2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSyncExternalStore } from "react";
 import { useStore } from "zustand";
@@ -115,7 +106,7 @@ export function EditMenu({ chrome, mapControllerRef }: EditMenuProps) {
           size={chrome.buttonSize}
           aria-label={t("toolbar.menu.edit")}
         >
-          <Pencil className={chrome.iconClassName} />
+          <ProEditIcon className={chrome.iconClassName} />
           {chrome.renderLabel(t("toolbar.menu.edit"))}
         </Button>
       </DropdownMenuTrigger>

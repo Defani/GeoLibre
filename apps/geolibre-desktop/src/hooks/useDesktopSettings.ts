@@ -1,5 +1,4 @@
 import {
-  createDefaultMapView,
   isAllowedPluginManifestUrl,
   normalizeMapViewState,
   normalizeLayerStyleEntries,
@@ -325,9 +324,9 @@ export const DEFAULT_STARTUP_SETTINGS: StartupSettings = {
   mode: "default",
   projectPath: null,
   projectName: null,
-  globeByDefault: true,
-  center: [...createDefaultMapView().center],
-  zoom: createDefaultMapView().zoom,
+  globeByDefault: false, // Defani edition: flat map by default
+  center: [118, -2.5], // Defani edition: open over Indonesia
+  zoom: 4.2,
   layerStyles: null,
   layers: null,
   openS3Browser: false,
@@ -427,7 +426,7 @@ function normalizeStartupSettings(startup: unknown): StartupSettings {
     mode: mode === "specific" && !projectPath ? "default" : mode,
     projectPath,
     projectName,
-    globeByDefault: typeof candidate.globeByDefault === "boolean" ? candidate.globeByDefault : true,
+    globeByDefault: typeof candidate.globeByDefault === "boolean" ? candidate.globeByDefault : false,
     center: view.center,
     zoom: view.zoom,
     layerStyles: normalizeStartupLayerStyles(candidate.layerStyles),
@@ -640,7 +639,21 @@ function loadDesktopSettings(): DesktopSettings {
   try {
     const stored = window.localStorage.getItem(DESKTOP_SETTINGS_STORAGE_KEY);
     if (!stored) return DEFAULT_DESKTOP_SETTINGS;
-    return normalizeDesktopSettings(JSON.parse(stored) as unknown);
+    const settings = normalizeDesktopSettings(JSON.parse(stored) as unknown);
+    // Defani edition, one-time migration: settings saved by the old GeoLibre
+    // build still ask for the globe and a world view. Switch them once to the
+    // flat map over Indonesia; a later choice in Settings is kept.
+    const MIGRATION_KEY = "the-funny-gis:flat-indonesia-v1";
+    if (window.localStorage.getItem(MIGRATION_KEY) !== "1") {
+      const migrated: DesktopSettings = {
+        ...settings,
+        startup: { ...settings.startup, globeByDefault: false, center: [...DEFAULT_DESKTOP_SETTINGS.startup.center], zoom: DEFAULT_DESKTOP_SETTINGS.startup.zoom },
+      };
+      window.localStorage.setItem(DESKTOP_SETTINGS_STORAGE_KEY, serializeDesktopSettingsForStorage(migrated));
+      window.localStorage.setItem(MIGRATION_KEY, "1");
+      return migrated;
+    }
+    return settings;
   } catch {
     return DEFAULT_DESKTOP_SETTINGS;
   }

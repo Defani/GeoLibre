@@ -5,12 +5,14 @@ const DB_VERSION = 2;
 const STORE_NAME = "snapshots";
 const METADATA_STORE_NAME = "snapshot-metadata";
 const MAX_SNAPSHOTS = 20;
-const MAX_TOTAL_BYTES = 50 * 1024 * 1024;
+// Defani edition: GIS projects with embedded vectors (kawasan hutan, batas
+// wilayah) easily pass 10 MB; IndexedDB in the desktop WebView has ample room.
+const MAX_TOTAL_BYTES = 400 * 1024 * 1024;
 /**
  * Largest serialized project autosave keeps. Above it a snapshot is skipped
  * ("too-large") and the status bar shows autosave as paused.
  */
-export const MAX_SNAPSHOT_BYTES = 10 * 1024 * 1024;
+export const MAX_SNAPSHOT_BYTES = 64 * 1024 * 1024;
 
 export interface ProjectHistorySnapshot {
   id: string;

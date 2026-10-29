@@ -19,11 +19,6 @@ import {
 } from "@geolibre/processing";
 import {
   Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   Input,
   Label,
   ScrollArea,
@@ -36,10 +31,10 @@ import {
   Download,
   FolderOpen,
   Loader2,
-  Play,
   Save,
   Server,
 } from "lucide-react";
+import { QgisAlgorithmWindow } from "./QgisAlgorithmWindow";
 import {
   useCallback,
   useEffect,
@@ -71,7 +66,6 @@ import { fetchableUrl } from "../../lib/url-utils";
 import {
   translateParameter,
   translateToolDescription,
-  translateToolGroup,
   translateToolName,
 } from "../../lib/processing-tool-i18n";
 
@@ -95,20 +89,6 @@ type RasterEngine = "sidecar" | "client";
 
 const RUNNING_JOB_STATUSES = new Set(["pending", "running"]);
 
-/** Tools grouped by their `group` label, preserving registry order. */
-function groupedTools(): { group: string; tools: RasterTool[] }[] {
-  const groups: { group: string; tools: RasterTool[] }[] = [];
-  for (const tool of RASTER_TOOLS) {
-    let entry = groups.find((g) => g.group === tool.group);
-    if (!entry) {
-      entry = { group: tool.group, tools: [] };
-      groups.push(entry);
-    }
-    entry.tools.push(tool);
-  }
-  return groups;
-}
-
 /** Collect the default values declared by a tool's parameters. */
 function toolDefaults(tool: RasterTool): Record<string, unknown> {
   const defaults: Record<string, unknown> = {};
@@ -122,7 +102,7 @@ interface RasterToolsDialogProps {
   mapControllerRef: RefObject<MapEngine | null>;
 }
 
-export function RasterToolsDialog({ mapControllerRef }: RasterToolsDialogProps): ReactElement {
+export function RasterToolsDialog({ mapControllerRef }: RasterToolsDialogProps): ReactElement | null {
   const { t } = useTranslation();
   const openTool = useAppStore((s) => s.ui.rasterToolOpen);
   const setRasterToolOpen = useAppStore((s) => s.setRasterToolOpen);
@@ -177,7 +157,6 @@ export function RasterToolsDialog({ mapControllerRef }: RasterToolsDialogProps):
   } | null>(null);
 
   const tool = useMemo(() => getRasterTool(selectedId) ?? RASTER_TOOLS[0], [selectedId]);
-  const groups = useMemo(groupedTools, []);
 
   // When the menu opens the dialog with a specific tool, preselect it.
   useEffect(() => {
@@ -641,57 +620,38 @@ export function RasterToolsDialog({ mapControllerRef }: RasterToolsDialogProps):
 
   const running = Boolean(job && RUNNING_JOB_STATUSES.has(job.status)) || clientRunning;
 
+  const close = () => {
+    // Clear the job so the poll effect's cleanup stops fetching.
+    setRasterToolOpen(null);
+    setJob(null);
+  };
+  const toolName = translateToolName(t, "raster", tool);
+  const failed = !running && (Boolean(error) || job?.status === "failed");
+  const done = !running && (job?.status === "succeeded" || Boolean(clientResult) || clientLog.length > 0);
+
+  // Defani edition: QGIS-style floating algorithm window.
+  if (!open) return null;
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next: boolean) => {
-        if (!next) {
-          // Clear the job so the poll effect's cleanup stops fetching; Radix
-          // keeps the dialog mounted for the exit animation otherwise.
-          setRasterToolOpen(null);
-          setJob(null);
-        }
-      }}
-    >
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{t("toolbar.rasterTool.dialogTitle")}</DialogTitle>
-          <DialogDescription>{t("toolbar.rasterTool.dialogDescription")}</DialogDescription>
-        </DialogHeader>
-
-        <div className="flex gap-4">
-          {/* Tool list */}
-          <ScrollArea className="h-[26rem] w-48 shrink-0 rounded-md border">
-            <div className="p-1">
-              {groups.map((group) => (
-                <div key={group.group} className="mb-1">
-                  <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {translateToolGroup(t, group.group)}
-                  </div>
-                  {group.tools.map((entry) => (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      onClick={() => setSelectedId(entry.id)}
-                      className={cn(
-                        "w-full rounded-md px-2 py-1.5 text-start text-sm transition-colors hover:bg-accent",
-                        entry.id === selectedId && "bg-accent font-medium text-accent-foreground",
-                      )}
-                    >
-                      {translateToolName(t, "raster", entry)}
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-
-          {/* Parameter form + run + log */}
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <p className="text-sm text-muted-foreground">
-              {translateToolDescription(t, "raster", tool)}
-            </p>
-
+    <QgisAlgorithmWindow
+      title={toolName}
+      description={translateToolDescription(t, "raster", tool)}
+      resetKey={openTool}
+      running={running}
+      failed={failed}
+      done={done}
+      runDisabled={(engine === "sidecar" && runtimeAvailable !== true) || (engine === "client" && !clientInput)}
+      onRun={() => void handleRun()}
+      onClose={close}
+      footerExtra={
+        clientResult ? (
+          <Button type="button" size="sm" variant="outline" onClick={() => void downloadClientResult()} className="gap-1.5">
+            <Download className="h-3.5 w-3.5" />
+            {t("toolbar.rasterTool.downloadGeoTiff")}
+          </Button>
+        ) : null
+      }
+      parameters={
+        <>
             {/* Engine selector (only for tools with a browser implementation). */}
             {tool.supportsClient && (
               <div className="flex flex-col gap-1">
@@ -858,25 +818,10 @@ export function RasterToolsDialog({ mapControllerRef }: RasterToolsDialogProps):
               />
             ))}
 
-            <div>
-              <Button
-                onClick={() => void handleRun()}
-                disabled={
-                  running ||
-                  (engine === "sidecar" && runtimeAvailable !== true) ||
-                  (engine === "client" && !clientInput)
-                }
-                className="gap-2"
-              >
-                {running ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-                Run
-              </Button>
-            </div>
-
+        </>
+      }
+      log={
+        <>
             {error && (
               <p className="flex items-center gap-2 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -933,23 +878,14 @@ export function RasterToolsDialog({ mapControllerRef }: RasterToolsDialogProps):
                   ))}
                   <div ref={clientLogEndRef} />
                 </ScrollArea>
-                {clientResult && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => void downloadClientResult()}
-                    className="gap-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    {t("toolbar.rasterTool.downloadGeoTiff")}
-                  </Button>
-                )}
               </div>
             )}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+          {!error && !job && clientLog.length === 0 ? (
+            <span className="text-muted-foreground">{t("toolbar.rasterTool.noOutput")}</span>
+          ) : null}
+        </>
+      }
+    />
   );
 }
 
@@ -1022,7 +958,7 @@ function RasterParameterField({
           onChange={(e) => onChange(e.target.value === "" ? undefined : Number(e.target.value))}
         />
         {param.description ? (
-          <p className="text-xs text-muted-foreground">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
         ) : null}
       </div>
     );
@@ -1050,7 +986,7 @@ function RasterParameterField({
           </Button>
         </div>
         {param.description ? (
-          <p className="text-xs text-muted-foreground">{param.description}</p>
+          <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
         ) : null}
       </div>
     );
@@ -1067,7 +1003,7 @@ function RasterParameterField({
         onChange={(e) => onChange(e.target.value)}
       />
       {param.description ? (
-        <p className="text-xs text-muted-foreground">{param.description}</p>
+        <p className="param-desc text-xs text-muted-foreground">{param.description}</p>
       ) : null}
     </div>
   );

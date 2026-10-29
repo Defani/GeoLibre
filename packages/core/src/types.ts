@@ -440,6 +440,17 @@ export interface LayerStyle {
    *   point/circle outlines remain pixel-based.
    */
   strokeWidthUnit: StrokeWidthUnit;
+  /**
+   * Defani edition: dash pattern for lines and polygon outlines, in line-width
+   * units (MapLibre `line-dasharray`), e.g. `[4, 2]` dashed, `[1, 2]` dotted.
+   * Absent or empty draws a solid line.
+   */
+  strokeDasharray?: number[];
+  /**
+   * Defani edition: a secondary "casing" colour drawn under lines (roads drawn
+   * as a coloured line with a dark edge, like ArcMap cartographic line symbols).
+   */
+  strokeCasingColor?: string;
   fillOpacity: number;
   circleRadius: number;
   textColor: string;
@@ -652,7 +663,7 @@ export const DEFAULT_LAYER_STYLE: LayerStyle = {
   strokeColor: "#1e40af",
   strokeWidth: 2,
   strokeWidthUnit: "pixels",
-  fillOpacity: 0.6,
+  fillOpacity: 1,
   circleRadius: 6,
   textColor: "#111827",
   textHaloColor: "#ffffff",
@@ -1818,7 +1829,7 @@ export const DEFAULT_PROJECT_PREFERENCES: ProjectPreferences = {
     maxZoom: 24,
     maxPitch: 85,
     renderWorldCopies: true,
-    projection: "globe",
+    projection: "mercator", // Defani edition: flat map by default (3D pitch / terrain still available)
     ellipsoidId: "earth",
     scaleUnit: "metric",
     // Off by default: turning it on can send pointer coordinates to a public

@@ -8,6 +8,9 @@ import {
 import { BROWSER_PANEL_ID } from "../useRegisterBrowserPanel";
 import { COMMENTS_PANEL_ID } from "../useRegisterCommentsPanel";
 import { OBIA_PANEL_ID } from "../../lib/obia/obia-panel";
+import { SQL_PANEL_ID } from "../useRegisterSqlPanel";
+import { PROCESSING_TOOLBOX_PANEL_ID } from "../../lib/processing-toolbox";
+import { getNativePanel } from "../../lib/native-panels";
 import type { LayoutOptions } from "../useLayoutOptions";
 import { useRightPanelState } from "../useRightPanels";
 
@@ -48,6 +51,23 @@ export function useRightPanelHost(layoutOptions: LayoutOptions) {
     el.className = "contents";
     return el;
   });
+  // Defani edition: the SQL Workspace sidebar's React portal host.
+  const [sqlContentEl] = useState(() => {
+    const el = document.createElement("div");
+    el.className = "contents";
+    return el;
+  });
+  const [toolboxContentEl] = useState(() => {
+    const el = document.createElement("div");
+    el.className = "contents";
+    return el;
+  });
+  // Defani edition: one shared host for the native panels (SDM, ...).
+  const [nativeContentEl] = useState(() => {
+    const el = document.createElement("div");
+    el.className = "contents";
+    return el;
+  });
   const rightPanelState = useRightPanelState();
   const activePanelId = rightPanelState.activeId;
   const replaceStylePanelIds = rightPanelState.visibleIds.filter(
@@ -66,7 +86,13 @@ export function useRightPanelHost(layoutOptions: LayoutOptions) {
         ? commentsContentEl
         : activePanelId === OBIA_PANEL_ID
           ? obiaContentEl
-          : pluginContentEl;
+          : activePanelId === SQL_PANEL_ID
+            ? sqlContentEl
+            : activePanelId === PROCESSING_TOOLBOX_PANEL_ID
+              ? toolboxContentEl
+              : getNativePanel(activePanelId)
+                ? nativeContentEl
+                : pluginContentEl;
   // Render the active panel into the shared host once; re-run when its
   // registration is replaced (re-registration refresh) but not on dock/collapse
   // changes. Keyed on the render function identity so that a plugin
@@ -114,6 +140,9 @@ export function useRightPanelHost(layoutOptions: LayoutOptions) {
     commentsContentEl,
     dockContentEl,
     obiaContentEl,
+    sqlContentEl,
+    toolboxContentEl,
+    nativeContentEl,
     pluginPanelWidth,
     replaceLayersPanelIds,
     replaceStylePanelIds,

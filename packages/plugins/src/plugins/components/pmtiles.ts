@@ -48,7 +48,7 @@ const PMTILES_OPTIONS = {
   defaultCircleColor: DEFAULT_LAYER_STYLE.fillColor,
   defaultFillColor: DEFAULT_LAYER_STYLE.fillColor,
   defaultLineColor: DEFAULT_LAYER_STYLE.strokeColor,
-  defaultOpacity: 0.8,
+  defaultOpacity: 1,
   defaultPickable: false,
   sampleData: [
     { label: "Overture buildings", url: PMTILES_SAMPLE_URL },

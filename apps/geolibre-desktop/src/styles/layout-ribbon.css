@@ -1,0 +1,64 @@
+/* Defani edition: Layout View ribbon polish (ArcGIS Pro look, coloured icons). */
+
+html[data-workspace-view="layout"] header:not(.glc-top) {
+  min-height: 92px; align-items: stretch; overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: thin; scrollbar-color: #c4ccd6 transparent; background: hsl(var(--card));
+}
+html[data-workspace-view="layout"] header:not(.glc-top)::-webkit-scrollbar { height: 6px; }
+html[data-workspace-view="layout"] header:not(.glc-top)::-webkit-scrollbar-thumb { background: #c4ccd6; border-radius: 3px; }
+
+/* App buttons (Project / Settings / Help) left of the ribbon: same big-button look. */
+html[data-workspace-view="layout"] header:not(.glc-top) > button { align-self: stretch !important; height: auto !important; min-width: 56px; padding: 6px 6px 18px !important; justify-content: flex-start !important; }
+
+.pro-ribbon { gap: 0; }
+.pro-group { padding: 4px 6px 2px; justify-content: space-between; }
+.pro-items { align-items: flex-start !important; gap: 2px !important; }
+.pro-cap { font-size: 10.5px; line-height: 14px; padding-top: 2px; }
+
+/* Big buttons: one height, icon over label. */
+.pro-ribbon button { height: 62px !important; min-width: 50px !important; padding: 5px 5px 3px !important; gap: 4px !important; justify-content: flex-start !important; border: 1px solid transparent !important; }
+.pro-ribbon button:hover { border-color: #9fcdee !important; background: #e6f1fa !important; }
+html.dark .pro-ribbon button:hover { background: #36404a !important; }
+.pro-ribbon button.active, .pro-ribbon button.on { background: #cfe6f7 !important; border-color: #4FB0EA !important; }
+html.dark .pro-ribbon button.active, html.dark .pro-ribbon button.on { background: #1f4a6b !important; }
+.pro-ribbon svg { width: 26px !important; height: 26px !important; }
+.pro-ribbon button[data-pro-label]::after { font-size: 11px !important; line-height: 12px !important; color: hsl(var(--foreground)); }
+
+/* Small stacked buttons (Map Frame group): icon + label on one row. */
+.pro-ribbon .pro-frame-stack { display: flex; flex-direction: column; gap: 1px; }
+.pro-ribbon .pro-frame-btn.small { flex-direction: row !important; height: 21px !important; min-width: 0 !important; justify-content: flex-start !important; gap: 5px !important; padding: 0 7px 0 4px !important; white-space: nowrap; font-size: 11.5px !important; }
+.pro-ribbon .pro-frame-btn.small svg { width: 15px !important; height: 15px !important; }
+.pro-ribbon .pro-frame-btn.small span { color: hsl(var(--foreground)); }
+.pro-ribbon .pro-frame-btn:not(.small) span { font-size: 11px; color: hsl(var(--foreground)); }
+.pro-ribbon .pro-frame-select { width: 160px !important; height: 24px !important; }
+.pro-ribbon .pro-frame-scalerow { height: 24px; }
+.pro-ribbon .pro-frame-scale { width: 120px !important; height: 24px !important; }
+.pro-ribbon .glc-layoutpick, .pro-ribbon .glc-zoompill { align-self: center; }
+.pro-ribbon .glc-layoutpick button, .pro-ribbon .glc-zoompill button { height: 28px !important; min-width: 28px !important; padding: 2px !important; }
+.pro-ribbon .glc-layoutpick svg, .pro-ribbon .glc-zoompill svg { width: 18px !important; height: 18px !important; }
+.pro-ribbon .pro-checks { align-self: center; }
+.pro-ribbon .pro-check { height: 21px !important; }
+
+/* Coloured icons (ArcGIS Pro palette). Labels stay in the text colour. */
+.pro-ribbon [data-tool="select"] { color: #0079C1 !important; }
+.pro-ribbon [data-tool="pan"] { color: #E8871E !important; }
+.pro-ribbon [data-tool="content"] { color: #7E57C2 !important; }
+.pro-ribbon [data-tool="map"] { color: #3A9E43 !important; }
+.pro-ribbon [data-tool="inset"] { color: #11968A !important; }
+.pro-ribbon [data-tool="legend"] { color: #0079C1 !important; }
+.pro-ribbon [data-tool="north"] { color: #D23C2F !important; }
+.pro-ribbon [data-tools^="scalebar"] { color: #5B6573 !important; }
+.pro-ribbon [data-tool="colorbar"] { color: #E8871E !important; }
+.pro-ribbon [data-tools^="title"] { color: #1f2937 !important; }
+.pro-ribbon [data-tools^="shape"] { color: #7E57C2 !important; }
+.pro-ribbon [data-tools^="pen"] { color: #D4A015 !important; }
+.pro-ribbon [data-tools^="image"] { color: #3A9E43 !important; }
+.pro-ribbon [data-tools^="marker"] { color: #D23C2F !important; }
+.pro-ribbon [data-tools^="attrtable"] { color: #11968A !important; }
+.pro-ribbon .glc-ibtn[title^="Undo"], .pro-ribbon .glc-ibtn[title^="Redo"] { color: #5B6573 !important; }
+.pro-ribbon .glc-ibtn[title^="Save layout"] { color: #0079C1 !important; }
+.pro-ribbon .glc-exportbtn { color: #3A9E43 !important; }
+.pro-ribbon .glc-mainmenu { color: #5B6573 !important; }
+.pro-ribbon .glc-ibtn[title^="Fit page"] { color: #11968A !important; }
+.pro-ribbon .glc-docktog { color: #0079C1 !important; }
+.pro-ribbon .glc-docktog ~ .glc-docktog { color: #7E57C2 !important; }

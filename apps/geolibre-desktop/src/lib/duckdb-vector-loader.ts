@@ -1,3 +1,4 @@
+import { simplifyToleranceFor } from "./performance-settings";
 import type * as duckdb from "@duckdb/duckdb-wasm";
 import type { FeatureCollection, Geometry, Position } from "geojson";
 import { rowsFromResult } from "./arrow-decimal";
@@ -6,6 +7,7 @@ import {
   detectGeometryColumn,
   geometryExpr,
   geometryGeoJsonSql,
+  geometryGeoJsonSqlSimplified,
   isGenericUnsupportedWkbError,
   isGeometryColumnType,
   isUnsupportedSurfaceWkbError,
@@ -783,7 +785,18 @@ export async function loadDuckDbVectorFile(
         guardConfirmed = true;
       }
 
-      const geometryJsonSql = geometryGeoJsonSql(geometryExpr(detected), sourceCrs);
+      // Defani edition: heavy files are simplified while they load (see
+      // Settings › Performance); the main file's size decides.
+      const tolerance = simplifyToleranceFor(file.data.byteLength);
+      if (tolerance !== null) {
+        console.info(
+          `[GeoLibre] simplifying "${file.name}" (${Math.round(file.data.byteLength / 1048576)} MB) at ${tolerance}°`,
+        );
+      }
+      const geometryJsonSql =
+        tolerance !== null
+          ? geometryGeoJsonSqlSimplified(geometryExpr(detected), sourceCrs, tolerance)
+          : geometryGeoJsonSql(geometryExpr(detected), sourceCrs);
       const collection = await queryFeatureCollection(
         connection,
         `SELECT *, ${geometryJsonSql} AS ${quoteIdentifier(

@@ -111,7 +111,7 @@ const ZARR_OPTIONS = {
     "#08519c",
     "#08306b",
   ],
-  defaultOpacity: 0.85,
+  defaultOpacity: 1,
   defaultPickable: false,
   defaultSelector: { band: "prec", month: 1 },
   // The SST entry carries its own settings because the `default*` options above

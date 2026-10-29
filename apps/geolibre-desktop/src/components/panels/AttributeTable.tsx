@@ -96,9 +96,12 @@ import {
   Trash2,
   X,
   Ban,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import {
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type RefObject,
   useEffect,
   useMemo,
@@ -139,6 +142,7 @@ import { registerPendingAttributeDrafts } from "../../lib/attribute-draft-commit
 import { RESERVED_PROPERTY_KEYS } from "../../lib/field-collection";
 import {
   AREA_UNITS,
+  COORD_FORMATS,
   detectGeometryFamilies,
   DISTANCE_UNITS,
   UNIT_SYMBOLS,
@@ -184,7 +188,7 @@ const MAX_ATTRIBUTE_COLUMN_WIDTH = 520;
 // Estimated row height used to size the virtualizer before real rows are
 // measured. View-mode rows are ~37px; edit-mode rows (with an Input) are taller
 // and are corrected by measureElement once rendered.
-const ESTIMATED_ROW_HEIGHT = 37;
+const ESTIMATED_ROW_HEIGHT = 23; // Defani edition: compact ArcMap-style rows
 /** Sticky header plus horizontal scrollbar: the table's non-row height, in px. */
 const ATTRIBUTE_TABLE_CHROME_HEIGHT = 58;
 const DEFAULT_TABLE_HEIGHT = 192;
@@ -538,6 +542,35 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
   // Collapsed shows only the toolbar header, hiding the table body, while the
   // panel stays open. Distinct from closing the panel entirely (the X button).
   const [collapsed, setCollapsed] = useState(false);
+  // Defani edition: the table is a floating window (centred, draggable,
+  // resizable from the corner, maximizable) instead of a bottom dock.
+  const [win, setWin] = useState(() => {
+    const w = Math.min(1000, Math.max(480, window.innerWidth - 120));
+    const h = Math.min(440, Math.max(260, window.innerHeight - 220));
+    return { x: Math.round((window.innerWidth - w) / 2), y: Math.round((window.innerHeight - h) / 2), w, h };
+  });
+  const [maximized, setMaximized] = useState(false);
+  const dragWindow = (event: ReactPointerEvent<HTMLElement>, mode: "move" | "resize") => {
+    if (maximized) return;
+    if (mode === "move" && (event.target as HTMLElement).closest("button, input, select, textarea, a, [role=combobox]")) return;
+    event.preventDefault();
+    const start = { px: event.clientX, py: event.clientY, ...win };
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - start.px;
+      const dy = ev.clientY - start.py;
+      setWin(
+        mode === "move"
+          ? { ...start, x: Math.max(0, Math.min(window.innerWidth - 120, start.x + dx)), y: Math.max(0, Math.min(window.innerHeight - 40, start.y + dy)) }
+          : { ...start, w: Math.max(420, start.w + dx), h: Math.max(200, start.h + dy) },
+      );
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
   const [isEditing, setIsEditing] = useState(false);
   const [drafts, setDrafts] = useState<AttributeDrafts>({});
   const [exportError, setExportError] = useState<string | null>(null);
@@ -1491,6 +1524,8 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
     const metrics: GeometryMetric[] = [];
     if (calcGeometryFamilies.has("polygon")) metrics.push("area", "perimeter");
     if (calcGeometryFamilies.has("line")) metrics.push("length");
+    // Defani edition: X / Y coordinates (point or centroid) for any geometry.
+    if (calcGeometryFamilies.size > 0) metrics.push("x", "y");
     return metrics;
   }, [calcGeometryFamilies]);
   // Fall back to the first available metric/unit when the current selection is
@@ -1498,7 +1533,12 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
   const calcEffectiveMetric = calcAvailableMetrics.includes(calcGeomMetric)
     ? calcGeomMetric
     : (calcAvailableMetrics[0] ?? "length");
-  const calcGeomUnitOptions = calcEffectiveMetric === "area" ? AREA_UNITS : DISTANCE_UNITS;
+  const calcGeomUnitOptions =
+    calcEffectiveMetric === "area"
+      ? AREA_UNITS
+      : calcEffectiveMetric === "x" || calcEffectiveMetric === "y"
+        ? COORD_FORMATS
+        : DISTANCE_UNITS;
   const calcEffectiveUnit = (calcGeomUnitOptions as readonly string[]).includes(calcGeomUnit)
     ? calcGeomUnit
     : calcGeomUnitOptions[0];
@@ -1787,10 +1827,14 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
       ref={tableSectionRef}
       aria-label={t("attributeTable.title")}
       data-collapsed={collapsed || undefined}
-      className="geolibre-attribute-table-panel relative flex shrink-0 flex-col border-t bg-card"
-      style={{ height: collapsed ? undefined : tableHeight }}
+      className="geolibre-attribute-table-panel fixed z-[60] flex flex-col overflow-clip rounded-md border bg-card shadow-2xl"
+      style={
+        maximized
+          ? { inset: 8 }
+          : { left: win.x, top: win.y, width: win.w, height: collapsed ? undefined : win.h }
+      }
     >
-      {!collapsed ? (
+      {false ? (
         <div
           role="separator"
           aria-orientation="horizontal"
@@ -1803,7 +1847,13 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
         ref={tableResizeGuideRef}
         className="pointer-events-none fixed left-0 right-0 z-50 hidden h-px bg-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]"
       />
-      <div className="flex flex-wrap items-center gap-2 border-b px-3 py-1.5 md:flex-nowrap">
+      <div
+        className={`attr-toolbar flex min-w-0 flex-wrap items-center gap-2 border-b bg-muted/60 px-3 py-1.5 ${maximized ? "" : "cursor-move"}`}
+        onPointerDown={(event) => dragWindow(event, "move")}
+        onDoubleClick={(event) => {
+          if (!(event.target as HTMLElement).closest("button, input, select, textarea")) setMaximized((v) => !v);
+        }}
+      >
         <TableProperties className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-semibold">{t("attributeTable.title")}</span>
         {layer ? (
@@ -2210,6 +2260,16 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
           variant="ghost"
           size="icon"
           className="h-7 w-7"
+          title={maximized ? "Restore" : "Full page"}
+          aria-label={maximized ? "Restore" : "Full page"}
+          onClick={() => setMaximized((v) => !v)}
+        >
+          {maximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
           title={t("attributeTable.close")}
           aria-label={t("attributeTable.close")}
           onClick={() => setAttributeTableOpen(false)}
@@ -2217,6 +2277,15 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
           <X className="h-4 w-4" />
         </Button>
       </div>
+      {!maximized && !collapsed ? (
+        <div
+          aria-hidden
+          title="Resize"
+          className="absolute bottom-0 right-0 z-30 h-4 w-4 cursor-nwse-resize"
+          style={{ background: "linear-gradient(135deg, transparent 50%, hsl(var(--muted-foreground) / 0.5) 50%, transparent 60%, transparent 70%, hsl(var(--muted-foreground) / 0.5) 70%, transparent 80%)" }}
+          onPointerDown={(event) => dragWindow(event, "resize")}
+        />
+      ) : null}
       {/*
         Vertical scrollbar height reserves 3.625rem: 2.75rem for the sticky
         header (top-11) plus 0.875rem for the horizontal scrollbar (h-3.5),
@@ -2240,7 +2309,7 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
             // scroll.
             <table
               data-testid="attribute-table"
-              className="mb-3.5 table-fixed caption-bottom text-sm"
+              className="arc-table mb-3.5 table-fixed caption-bottom text-sm"
               style={{ minWidth: "100%", width: tableWidth }}
             >
               <colgroup>
@@ -2716,7 +2785,11 @@ export function AttributeTable({ mapControllerRef, refresh }: AttributeTableProp
                   >
                     {calcAvailableMetrics.map((metric) => (
                       <option key={metric} value={metric}>
-                        {t(`attributeTable.geomMetric.${metric}`)}
+                        {metric === "x"
+                          ? "X (Longitude)"
+                          : metric === "y"
+                            ? "Y (Latitude)"
+                            : t(`attributeTable.geomMetric.${metric}`)}
                       </option>
                     ))}
                   </Select>

@@ -1,4 +1,5 @@
 import { shouldZoomToNewLayers, useAppStore } from "@geolibre/core";
+import { openLargeVectorsAsTiles } from "../../lib/tiled-vector";
 import type { MapEngine } from "@geolibre/map";
 import { addVectorFileToMap, prepareRasterControl } from "@geolibre/plugins";
 import type { TFunction } from "i18next";
@@ -274,9 +275,15 @@ export function useFileDrop({
                     `${name}: ${error instanceof Error ? error.message : String(error)}`,
                   ),
               });
-              const importedLayers = await loadDroppedVectorPaths(containers.remaining, {
+              // Defani edition: large files open as native tiles.
+              const tiledDrop = await openLargeVectorsAsTiles(containers.remaining);
+              const importedLayers = await loadDroppedVectorPaths(tiledDrop.remaining, {
                 onLargeDataset: confirmLargeVectorDataset,
               });
+              if (tiledDrop.tiled > 0 && importedLayers.length === 0 && rasterCount === 0) {
+                setDropMessage(null);
+                return;
+              }
               // See the browser handler: skip finishDrop's empty-input error
               // when PBF or photo files were present (even if rejected/failed).
               // See the browser handler: suppress the empty-input error when

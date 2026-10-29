@@ -66,7 +66,13 @@ export const AREA_UNITS: readonly AreaUnit[] = [
 ];
 
 /** Short, language-neutral symbols for the unit dropdown (e.g. "km²", "ha"). */
-export const UNIT_SYMBOLS: Record<DistanceUnit | AreaUnit, string> = {
+/** Coordinate output formats for `$x` / `$y` (Defani edition). */
+export type CoordFormat = "decimal-degrees" | "dms";
+export const COORD_FORMATS: readonly CoordFormat[] = ["decimal-degrees", "dms"];
+
+export const UNIT_SYMBOLS: Record<DistanceUnit | AreaUnit | CoordFormat, string> = {
+  "decimal-degrees": "DD",
+  dms: "DMS",
   meters: "m",
   kilometers: "km",
   feet: "ft",
@@ -82,7 +88,95 @@ export const UNIT_SYMBOLS: Record<DistanceUnit | AreaUnit, string> = {
 };
 
 /** A geometry measurement the Field Calculator can insert. */
-export type GeometryMetric = "length" | "perimeter" | "area";
+export type GeometryMetric = "length" | "perimeter" | "area" | "x" | "y";
+
+/** Every vertex of a geometry, flattened. */
+function allPositions(geometry: Geometry | null | undefined, into: Position[] = []): Position[] {
+  if (!geometry) return into;
+  switch (geometry.type) {
+    case "Point":
+      into.push(geometry.coordinates);
+      break;
+    case "MultiPoint":
+    case "LineString":
+      into.push(...geometry.coordinates);
+      break;
+    case "MultiLineString":
+    case "Polygon":
+      for (const part of geometry.coordinates) into.push(...part);
+      break;
+    case "MultiPolygon":
+      for (const poly of geometry.coordinates) for (const ring of poly) into.push(...ring);
+      break;
+    case "GeometryCollection":
+      for (const member of geometry.geometries) allPositions(member, into);
+      break;
+  }
+  return into;
+}
+
+/** Area-weighted centroid of a polygon's outer ring (planar, in degrees). */
+function ringCentroid(ring: Position[]): { x: number; y: number; area: number } | null {
+  let a = 0;
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const f = ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+    a += f;
+    cx += (ring[j][0] + ring[i][0]) * f;
+    cy += (ring[j][1] + ring[i][1]) * f;
+  }
+  if (a === 0) return null;
+  return { x: cx / (3 * a), y: cy / (3 * a), area: Math.abs(a / 2) };
+}
+
+/**
+ * The X (longitude) or Y (latitude) of a feature, like ArcGIS Calculate
+ * Geometry "Point x/y-coordinate" / "Centroid x/y-coordinate": a point's own
+ * position, a polygon's area-weighted centroid, otherwise the vertex mean.
+ * `format` "dms" returns a degrees-minutes-seconds string.
+ */
+export function geometryCoordinate(
+  geometry: Geometry | null | undefined,
+  axis: "x" | "y",
+  format: CoordFormat = "decimal-degrees",
+): number | string | null {
+  if (!geometry) return null;
+  let point: { x: number; y: number } | null = null;
+  if (geometry.type === "Point") {
+    point = { x: geometry.coordinates[0], y: geometry.coordinates[1] };
+  } else if (geometry.type === "Polygon" || geometry.type === "MultiPolygon") {
+    const polys = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+    let sx = 0;
+    let sy = 0;
+    let total = 0;
+    for (const poly of polys) {
+      const c = poly[0] ? ringCentroid(poly[0]) : null;
+      if (!c) continue;
+      sx += c.x * c.area;
+      sy += c.y * c.area;
+      total += c.area;
+    }
+    if (total > 0) point = { x: sx / total, y: sy / total };
+  }
+  if (!point) {
+    const all = allPositions(geometry);
+    if (!all.length) return null;
+    point = {
+      x: all.reduce((sum, p) => sum + p[0], 0) / all.length,
+      y: all.reduce((sum, p) => sum + p[1], 0) / all.length,
+    };
+  }
+  const value = axis === "x" ? point.x : point.y;
+  if (format !== "dms") return Math.round(value * 1e7) / 1e7;
+  const hemi = axis === "x" ? (value < 0 ? "W" : "E") : value < 0 ? "S" : "N";
+  const abs = Math.abs(value);
+  const d = Math.floor(abs);
+  const mFloat = (abs - d) * 60;
+  const m = Math.floor(mFloat);
+  const sec = (mFloat - m) * 60;
+  return `${d}°${String(m).padStart(2, "0")}'${sec.toFixed(2).padStart(5, "0")}" ${hemi}`;
+}
 
 /** A base geometry family a feature can contribute to a layer. */
 export type GeometryFamily = "point" | "line" | "polygon";

@@ -1,3 +1,4 @@
+import { ProSettingsIcon } from "./toolbar/ProIcons";
 import {
   overlayStoredPreferenceCredentials,
   changedPreferenceCredentials,
@@ -32,6 +33,7 @@ import {
   Cloud,
   DownloadCloud,
   FolderOpen,
+  Gauge,
   Languages,
   Locate,
   MapPinned,
@@ -78,6 +80,7 @@ import {
 import { AiSection } from "./settings/AiSection";
 import { AppearanceSection, updateSavedThemeScheme } from "./settings/AppearanceSection";
 import { CloudStorageSettingsSection } from "./settings/CloudStorageSettingsSection";
+import { PerformanceSection } from "./settings/PerformanceSection";
 import { EnvironmentSection } from "./settings/EnvironmentSection";
 import { GeocodingSection } from "./settings/GeocodingSection";
 import { InterfaceSection } from "./settings/InterfaceSection";
@@ -112,7 +115,8 @@ export type SettingsSection =
   | "environment"
   | "cloudStorage"
   | "updates"
-  | "startup";
+  | "startup"
+  | "performance";
 
 /** A field a deep-link can ask Settings to focus once the section renders. */
 export type SettingsFocusTarget =
@@ -192,7 +196,25 @@ const SECTION_ITEMS: Array<{
     icon: DownloadCloud,
   },
   { id: "startup", labelKey: "settings.section.startup", icon: FolderOpen },
+  // Defani edition: speed choices (GPU info, render quality, large files).
+  { id: "performance", labelKey: "settings.section.performance", icon: Gauge },
 ];
+
+/** Colour of each category icon in the Options list (Defani edition). */
+const SECTION_COLORS: Record<SettingsSection, string> = {
+  language: "#8a5cc7",
+  map: "#2f7fd6",
+  layout: "#0f9d8f",
+  appearance: "#e2559a",
+  interface: "#5b6b7f",
+  geocoding: "#d64545",
+  ai: "#2f7fd6",
+  environment: "#a36a00",
+  cloudStorage: "#1a8fd8",
+  updates: "#3ea044",
+  startup: "#c98a00",
+  performance: "#ef7d22",
+};
 
 // The menu-item id that gates each Settings section, mirroring the dropdown.
 // Sections without an entry (Layout, Interface) always show so the profile UI
@@ -593,7 +615,13 @@ export function SettingsDialog({
           setError(null);
         }}
       >
-        <Icon className="h-4 w-4" />
+        {/* Defani edition: QGIS Options-style coloured category icons. */}
+        <span
+          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+          style={{ background: `${SECTION_COLORS[item.id]}1f`, color: SECTION_COLORS[item.id] }}
+        >
+          <Icon className="h-4 w-4" />
+        </span>
         {t(item.labelKey)}
       </Button>
     );
@@ -609,7 +637,7 @@ export function SettingsDialog({
             size={buttonSize}
             aria-label={t("settings.title")}
           >
-            <Settings className={iconClassName} />
+            <ProSettingsIcon className={iconClassName} />
             {showLabels ? <span className="hidden sm:inline">{t("settings.title")}</span> : null}
           </Button>
         </DropdownMenuTrigger>
@@ -929,7 +957,7 @@ export function SettingsDialog({
       </DropdownMenu>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-h-[min(88vh,760px)] max-w-3xl"
+          className="tfg-options max-h-[min(90vh,820px)] max-w-5xl"
           bodyClassName="overflow-hidden p-0"
         >
           <DialogHeader className="border-b px-6 pb-4 pt-6">
@@ -982,6 +1010,7 @@ export function SettingsDialog({
                   <StartupSection mapControllerRef={mapControllerRef} />
                 ) : null}
                 {effectiveSection === "updates" ? <UpdatesSection /> : null}
+                {effectiveSection === "performance" ? <PerformanceSection /> : null}
               </SettingsDraftProvider>
             </div>
           </div>

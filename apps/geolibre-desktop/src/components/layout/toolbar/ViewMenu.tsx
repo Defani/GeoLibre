@@ -1,3 +1,4 @@
+import { ProViewIcon } from "./ProIcons";
 import {
   Button,
   DropdownMenu,
@@ -14,23 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@geolibre/ui";
 import { useAppStore } from "@geolibre/core";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Box,
-  Compass,
-  Crosshair,
-  Earth,
-  Eye,
-  LayoutGrid,
-  Link2,
-  MapIcon,
-  Mountain,
-  Palette,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Box, Compass, Crosshair, Earth, LayoutGrid, Link2, MapIcon, Mountain, Palette, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ParseKeys } from "i18next";
@@ -196,7 +181,7 @@ export function ViewMenu({
           size={chrome.buttonSize}
           aria-label={t("toolbar.menu.view")}
         >
-          <Eye className={chrome.iconClassName} />
+          <ProViewIcon className={chrome.iconClassName} />
           {chrome.renderLabel(t("toolbar.menu.view"))}
         </Button>
       </DropdownMenuTrigger>

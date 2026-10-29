@@ -366,12 +366,6 @@ export function VectorStylePanel({
             extra right clearance so the overlay scrollbar never covers the
             right edge of a control (e.g. the "Transparent" label). */}
         <div className="space-y-4 p-3 pe-5">
-          {beforeIdControl}
-          {/* The 3D Z-value render (deck.gl) does not honor the MapLibre
-              min/max zoom range, so hide the controls rather than show a
-              silently-ignored setting. */}
-          {!elevation3dActive && zoomRangeControls}
-          {blendModeControl}
           {hasExtrusionControls && (
             <div className="space-y-2">
               <Label>{t("style.visualization")}</Label>
@@ -478,6 +472,19 @@ export function VectorStylePanel({
               )}
             </>
           )}
+          {/* Defani edition: like QGIS, the renderer and symbol come first and the
+              drawing-order / scale range / blending sit in a collapsible
+              "Layer Rendering" group. The 3D Z-value render (deck.gl) does not
+              honor the MapLibre zoom range, so that control stays hidden there. */}
+          <Separator />
+          <details className="qgis-group">
+            <summary className="cursor-pointer select-none text-sm font-semibold">Layer Rendering</summary>
+            <div className="mt-3 space-y-4">
+              {beforeIdControl}
+              {!elevation3dActive && zoomRangeControls}
+              {blendModeControl}
+            </div>
+          </details>
           {/* Attribute labels apply to vector features, not the heatmap density
               surface or the 3D extrusion / 3D Z-value renders. */}
           {!extrusionEnabled && !elevation3dActive && pointRenderer !== "heatmap" ? (

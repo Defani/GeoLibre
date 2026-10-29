@@ -6077,3 +6077,1615 @@ html.dark .maplibregl-popup-anchor-right:has(.vector-control-popup) .maplibregl-
   ) {
   filter: url(#geolibre-cvd-achromatopsia);
 }
+
+/* ---------------------------------------------------------------------------
+   Defani edition: ArcGIS Pro-like light theme. Neutral grey chrome around a
+   white map view, ArcGIS blue for the accent and a pale blue selection.
+   Dark mode is left as GeoLibre ships it. */
+:root:not(.dark) {
+  --background: 0 0% 100%;
+  --card: 0 0% 98%;
+  --popover: 0 0% 100%;
+  --primary: 202 100% 38%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 202 100% 38%;
+  --muted: 0 0% 95%;
+  --secondary: 0 0% 95%;
+  --accent: 205 75% 92%;
+  --accent-foreground: 205 60% 20%;
+  --border: 0 0% 84%;
+  --input: 0 0% 72%;
+}
+
+/* Defani edition: ArcMap ArcToolbox tree (dotted connectors, boxed +/-). */
+.arctoolbox .atb-branch { list-style: none; margin: 0 0 0 9px; padding: 0 0 0 9px; border-left: 1px dotted #9aa3ad; }
+.arctoolbox .atb-branch > li { position: relative; }
+.arctoolbox .atb-branch > li::before { content: ""; position: absolute; left: -9px; top: 10px; width: 8px; border-top: 1px dotted #9aa3ad; }
+.arctoolbox .atb-row { display: flex; width: calc(100% - 2px); align-items: center; gap: 4px; padding: 1px 4px 1px 1px; text-align: start; white-space: nowrap; border: 1px solid transparent; }
+.arctoolbox .atb-tool { padding-left: 14px; }
+.arctoolbox .atb-row:hover { background: #e5f1fb; border-color: #cce4f7; }
+.arctoolbox .atb-row:focus { outline: none; background: #cce8ff; border-color: #99d1ff; }
+.arctoolbox .atb-expander { display: inline-flex; width: 9px; height: 9px; flex: none; align-items: center; justify-content: center; border: 1px solid #8a96a3; background: #fff; color: #1f2937; font: 9px/1 monospace; }
+.dark .arctoolbox .atb-row:hover, .dark .arctoolbox .atb-row:focus { background: hsl(var(--accent)); border-color: transparent; }
+
+/* Defani edition: ArcMap-style thin TOC rows. */
+.toc-row { font-size: 12.5px; }
+.toc-row .text-sm { font-size: 12.5px; }
+.toc-row .toc-actions button { height: 1.375rem; width: 1.375rem; }
+.toc-row .toc-actions svg { height: 0.8rem; width: 0.8rem; }
+
+/* Defani edition: Layout View owns the whole workspace (no Data View panels). */
+html[data-workspace-view="layout"] [data-workspace-row] > :not(main) { display: none !important; }
+
+/* Defani edition: the geometry editor docked as an ArcMap Editor toolbar. */
+.editor-dock .geo-editor-control { box-shadow: none !important; background: transparent !important; margin: 0 !important; float: none !important; }
+.editor-dock .geo-editor-toolbar { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; }
+.editor-dock .geo-editor-toolbar button { width: 26px !important; height: 26px !important; }
+.editor-dock .geo-editor-collapse-btn { display: none !important; }
+
+/* Defani edition: QGIS-style algorithm window progress bar. */
+@keyframes qgis-progress { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+
+/* Defani edition: while editing, header menus show icons only so the Editor
+   toolbar fits; compact editor buttons; duplicate tools hidden. */
+html[data-editing] header > button > span,
+html[data-editing] header > * > button[aria-haspopup] > span { display: none !important; }
+html[data-editing] header > button, html[data-editing] header > * > button[aria-haspopup] { padding-inline: 4px !important; }
+.editor-dock .geo-editor-toolbar button { width: 23px !important; height: 23px !important; padding: 2px !important; }
+.editor-dock .geo-editor-tool-group { gap: 0 !important; padding: 0 2px !important; }
+.editor-dock button[title="Building massing"], .editor-dock button[title="Text"],
+.editor-dock button[title^="Open GeoJSON"], .editor-dock button[title^="Save GeoJSON"] { display: none !important; }
+
+/* Defani edition: Contents (Layers) and Browser dock on the right of the map.
+   The resize handle moves to the panel's left edge; `direction: rtl` on the
+   handle makes the resize hook flip its drag direction. */
+@media (min-width: 768px) {
+  [data-workspace-row] > main { order: 1; }
+  [data-workspace-row] > aside:has(~ main) { order: 2; }
+  [data-workspace-row] > main ~ aside { order: 3; }
+  .toc-panel { border-inline-end-width: 0 !important; border-inline-start-width: 1px !important; }
+  .layer-resize-handle { left: -4px !important; right: auto !important; direction: rtl; }
+}
+
+/* Defani edition: ArcGIS Pro Contents header (title, then a small tool row)
+   and no type badges on TOC rows, so nothing is cut off in a slim pane. */
+.toc-header button { height: 1.5rem !important; width: 1.5rem !important; }
+.toc-header button svg { height: 0.875rem; width: 0.875rem; }
+.toc-row span.uppercase { display: none; }
+@media (min-width: 768px) {
+  /* Defani edition: the Browser/Layers rail sits on the outer edge with the
+     Comments/Style rail, so the Contents pane touches the map directly. */
+  [data-workspace-row] > aside:first-of-type:has(~ aside ~ main) { order: 3; border-inline-start: 1px solid hsl(var(--border)); }
+  [data-workspace-row] > main ~ aside { order: 4; }
+}
+
+/* Defani edition: the drag grip only shows on hover, like a clean ArcMap TOC. */
+.toc-row .toc-grip { opacity: 0; transition: opacity 120ms; }
+.toc-row:hover .toc-grip, .toc-row .toc-grip:focus-visible { opacity: 1; }
+
+/* Defani edition: ArcMap-style attribute table (compact rows, grid lines,
+   grey header, one line per cell). */
+.arc-table { font-size: 12px; }
+.arc-table th { height: 26px !important; padding: 2px 6px !important; background: hsl(var(--muted)); font-weight: 600; border-inline-end: 1px solid hsl(var(--border)); }
+.arc-table td { padding: 2px 6px !important; height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-inline-end: 1px solid hsl(var(--border)); }
+.arc-table tbody tr:nth-child(even) { background: hsl(var(--muted) / 0.45); }
+.arc-table tbody tr[data-state="selected"] { background: #cce8ff !important; }
+
+/* Defani edition: compact attribute-table toolbar (ArcMap Table window). */
+.geolibre-attribute-table-panel .attr-toolbar { padding-block: 3px !important; gap: 4px !important; }
+.geolibre-attribute-table-panel .attr-toolbar > :first-child { white-space: nowrap; font-size: 13px; }
+.geolibre-attribute-table-panel .attr-toolbar button { height: 26px !important; padding-inline: 8px !important; font-size: 12px; }
+.geolibre-attribute-table-panel .attr-toolbar input { height: 26px !important; font-size: 12px; }
+.geolibre-attribute-table-panel .attr-toolbar * { white-space: nowrap; }
+.geolibre-attribute-table-panel .attr-toolbar { flex-wrap: wrap !important; row-gap: 3px !important; }
+
+/* Defani edition: one slim icon-only dock rail on the right edge. The
+   Browser/Layers rail is lifted onto the top of the Comments/Style rail so both
+   read as a single column, and the vertical text labels are hidden. */
+@media (min-width: 768px) {
+  [data-workspace-row] > aside[class*="md:w-11"] { width: 36px !important; }
+  [data-workspace-row] > aside[class*="md:w-11"] span[class*="writing-mode"] { display: none; }
+  [data-workspace-row] > aside[class*="md:w-11"] > button { padding: 7px !important; }
+  [data-workspace-row] > aside[class*="md:w-11"] > button svg { width: 18px; height: 18px; }
+  [data-workspace-row] > aside:first-of-type:has(~ aside ~ main)[class*="md:w-11"] {
+    position: absolute; top: 0; right: 0; z-index: 5; height: auto !important;
+    border: 0 !important; border-bottom: 1px solid hsl(var(--border)) !important;
+    padding-block: 6px !important; gap: 4px;
+  }
+  [data-workspace-row] > main ~ aside[class*="md:w-11"]:last-child { padding-top: 92px !important; }
+}
+
+/* Defani edition: distinct icons on the right dock rail. */
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Browser"] > svg { display: none; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Browser"]::before { content: ""; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M2.5%206.5V18a1.5%201.5%200%200%200%201.5%201.5h16a1.5%201.5%200%200%200%201.5-1.5V8.5A1.5%201.5%200%200%200%2020%207h-8.2L9.6%204.5H4A1.5%201.5%200%200%200%202.5%206Z%22%20fill%3D%22%23f2b630%22%20stroke%3D%22%238a6a12%22%20stroke-width%3D%221.2%22/%3E%3C/svg%3E") center / contain no-repeat; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Toolbox"] > svg { display: none; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Toolbox"]::before { content: ""; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M8.5%207V5.2c0-.6.4-1%201-1h5c.6%200%201%20.4%201%201V7%22%20fill%3D%22none%22%20stroke%3D%22%237a1f1f%22%20stroke-width%3D%221.5%22/%3E%3Crect%20x%3D%222.5%22%20y%3D%227%22%20width%3D%2219%22%20height%3D%2213%22%20rx%3D%221.5%22%20fill%3D%22%23d23c2f%22%20stroke%3D%22%237a1f1f%22%20stroke-width%3D%221.2%22/%3E%3Crect%20x%3D%222.5%22%20y%3D%227%22%20width%3D%2219%22%20height%3D%224.5%22%20fill%3D%22%23e8665a%22%20stroke%3D%22%237a1f1f%22%20stroke-width%3D%221.2%22/%3E%3Crect%20x%3D%2210.5%22%20y%3D%2210%22%20width%3D%223%22%20height%3D%222.6%22%20fill%3D%22%23f3d36b%22/%3E%3C/svg%3E") center / contain no-repeat; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Comments"] > svg { display: none; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Comments"]::before { content: ""; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M4%204.5h16a1.5%201.5%200%200%201%201.5%201.5v9a1.5%201.5%200%200%201-1.5%201.5H10l-4.5%203.5v-3.5H4A1.5%201.5%200%200%201%202.5%2015V6A1.5%201.5%200%200%201%204%204.5Z%22%20fill%3D%22%239cc8f2%22%20stroke%3D%22%232f7fd6%22%20stroke-width%3D%221.2%22/%3E%3Cpath%20d%3D%22M7%209h10M7%2012h7%22%20stroke%3D%22%232f7fd6%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E") center / contain no-repeat; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="SQL Workspace"] > svg { display: none; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="SQL Workspace"]::before { content: ""; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%225.5%22%20rx%3D%228%22%20ry%3D%222.6%22%20fill%3D%22%23c7dcf3%22%20stroke%3D%22%232f7fd6%22%20stroke-width%3D%221.2%22/%3E%3Cpath%20d%3D%22M4%205.5v13c0%201.4%203.6%202.6%208%202.6s8-1.2%208-2.6v-13%22%20fill%3D%22%23e7f0fb%22%20stroke%3D%22%232f7fd6%22%20stroke-width%3D%221.2%22/%3E%3Cpath%20d%3D%22M4%2012c0%201.4%203.6%202.6%208%202.6s8-1.2%208-2.6%22%20fill%3D%22none%22%20stroke%3D%22%232f7fd6%22%20stroke-width%3D%221.2%22/%3E%3C/svg%3E") center / contain no-repeat; }
+
+/* Defani edition: the built-in iNaturalist Extractor opens from the dock rail
+   and ArcToolbox, not from a floating map button. */
+.geolibre-inat-control { display: none !important; }
+
+/* Defani edition: tool windows explain fields in the help pane, not inline. */
+.qgis-alg .param-desc { display: none; }
+
+/* Defani edition: the built-in Live MCP Bridge opens from the header, not a map button. */
+.glb-live-control { display: none !important; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="AI Assistant"] > svg { display: none; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="AI Assistant"]::before { content: ""; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Crect%20x%3D%224%22%20y%3D%227%22%20width%3D%2216%22%20height%3D%2213%22%20rx%3D%223%22%20fill%3D%22%239cc8f2%22%20stroke%3D%22%232f7fd6%22%20stroke-width%3D%221.3%22/%3E%3Ccircle%20cx%3D%229%22%20cy%3D%2213%22%20r%3D%221.6%22%20fill%3D%22%231f2937%22/%3E%3Ccircle%20cx%3D%2215%22%20cy%3D%2213%22%20r%3D%221.6%22%20fill%3D%22%231f2937%22/%3E%3Cpath%20d%3D%22M12%207V4M9.5%2017h5%22%20stroke%3D%22%232f7fd6%22%20stroke-width%3D%221.3%22/%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%223.5%22%20r%3D%221.3%22%20fill%3D%22%23f2b630%22/%3E%3C/svg%3E") center / contain no-repeat; }
+
+/* Defani edition: the AI Assistant dock replaces the Contents pane while open. */
+@media (min-width: 768px) {
+  html[data-ai-dock="open"] [data-workspace-row] .toc-panel { display: none !important; }
+}
+
+/* Defani edition: soft Figma-like dark mode — neutral greys (no blue tint),
+   gentle contrast, Figma's blue accent. `html.dark` outranks the base `.dark`. */
+html.dark {
+  --background: 0 0% 17%;        /* #2c2c2c panels */
+  --foreground: 0 0% 90%;        /* #e5e5e5 */
+  --card: 0 0% 17%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 20%;           /* #333 menus */
+  --popover-foreground: 0 0% 90%;
+  --primary: 205 100% 53%;       /* #0d99ff */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 22%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 21%;             /* #363636 */
+  --muted-foreground: 0 0% 64%;  /* #a3a3a3 */
+  --accent: 0 0% 24%;            /* #3d3d3d hover */
+  --accent-foreground: 0 0% 95%;
+  --destructive: 8 85% 66%;
+  --destructive-foreground: 0 0% 10%;
+  --border: 0 0% 26%;            /* #424242 */
+  --input: 0 0% 32%;
+  --ring: 205 100% 53%;
+  --elev-penumbra: hsl(0 0% 0% / 0.32);
+  --elev-umbra: hsl(0 0% 0% / 0.45);
+}
+html.dark body { background: #1e1e1e; }
+html.dark .maplibregl-canvas-container, html.dark [data-workspace-row] > main { background: #1e1e1e; }
+/* Light-only highlight colours used by the ArcMap-style lists, softened for dark. */
+html.dark .arc-table tbody tr[data-state="selected"] { background: hsl(205 100% 53% / 0.22) !important; }
+html.dark .arc-table tbody tr:nth-child(even) { background: hsl(0 0% 100% / 0.025); }
+html.dark .arctoolbox .atb-expander { background: transparent; color: hsl(var(--foreground)); border-color: hsl(var(--muted-foreground)); }
+html.dark .toc-row .toc-actions, html.dark .glb-docked .glb-bot-bubble { color: hsl(var(--foreground)); }
+
+/* Defani edition: in Layout View the header is the cartography head — the
+   Data View menus give way to the composer's own bar (just below), keeping only
+   Project, Settings and Help. */
+html[data-workspace-view="layout"] header:not(.glc-top) > button:not([aria-label="Project"]):not([aria-label="Settings"]):not([aria-label="Help"]),
+html[data-workspace-view="layout"] header:not(.glc-top) > [class*="relative ms-2"],
+html[data-workspace-view="layout"] header:not(.glc-top) > .editor-dock { display: none !important; }
+
+/* Defani edition: Earth Engine control docked in its panel — full width, flat. */
+.ee-dock .geolibre-earth-engine-control { position: static !important; width: 100% !important; max-width: none !important; margin: 0 !important; box-shadow: none !important; border: 0 !important; background: transparent !important; float: none !important; }
+.ee-dock .geolibre-earth-engine-control > button:first-child { display: none !important; }
+.ee-dock .geolibre-earth-engine-control [class*="panel"] { position: static !important; width: 100% !important; max-width: none !important; max-height: none !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; }
+.ee-dock input, .ee-dock select, .ee-dock textarea { border-radius: 4px; }
+.ee-dock button { border-radius: 4px; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Google Earth Engine"] > svg { display: none; }
+[data-workspace-row] > aside[class*="md:w-11"] > button[aria-label$="Google Earth Engine"]::before { content: ""; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229.5%22%20fill%3D%22%23e8f0fe%22%20stroke%3D%22%231a73e8%22%20stroke-width%3D%221.3%22/%3E%3Cpath%20d%3D%22M5%209.5c3-1%205%201.5%208%20.5s4-3%206-2.5M4.5%2014c3%201.5%206-1%209%200s4.5%202.5%206%201.5%22%20fill%3D%22none%22%20stroke%3D%22%2334a853%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2216.5%22%20cy%3D%227.5%22%20r%3D%221.6%22%20fill%3D%22%23fbbc04%22/%3E%3C/svg%3E") center / contain no-repeat; }
+
+.ee-dock .geolibre-earth-engine-control { display: none !important; }
+.ee-dock .plugin-control-panel.earth-engine-panel {
+  position: static !important; inset: auto !important; transform: none !important;
+  width: 100% !important; max-width: none !important; height: 100% !important; max-height: none !important;
+  margin: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  display: flex !important; flex-direction: column; background: hsl(var(--card)) !important; color: hsl(var(--foreground));
+}
+/* Earth Engine dock: the dock header replaces the control's own header; tabs
+   become a compact segmented bar; content scrolls; no resize grip. */
+.ee-dock .earth-engine-panel .plugin-control-header,
+.ee-dock .earth-engine-panel .plugin-resize-handle { display: none !important; }
+.ee-dock .earth-engine-panel .plugin-control-tabs {
+  display: flex !important; flex-wrap: wrap; gap: 2px; padding: 6px 8px; border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.6);
+}
+.ee-dock .earth-engine-panel .plugin-control-tab {
+  border: 1px solid transparent !important; background: transparent !important; color: hsl(var(--muted-foreground)) !important;
+  padding: 3px 9px !important; font-size: 12px !important; border-radius: 4px !important;
+}
+.ee-dock .earth-engine-panel .plugin-control-tab:hover { background: hsl(var(--accent)) !important; color: hsl(var(--foreground)) !important; }
+.ee-dock .earth-engine-panel .plugin-control-tab.active {
+  background: hsl(var(--background)) !important; color: hsl(var(--primary)) !important; border-color: hsl(var(--border)) !important; font-weight: 600;
+}
+.ee-dock .earth-engine-panel .plugin-control-content { flex: 1 1 auto; min-height: 0; overflow: auto !important; max-height: none !important; padding: 10px !important; font-size: 12.5px; }
+.ee-dock .earth-engine-panel .plugin-control-content button { font-size: 12px; }
+.ee-dock .earth-engine-panel .plugin-control-status { border-top: 1px solid hsl(var(--border)); padding: 4px 10px; font-size: 11px; color: hsl(var(--muted-foreground)); }
+
+/* Defani edition: ArcGIS Pro-style Layout ribbon in the header (Layout View). */
+html[data-workspace-view="layout"] header:not(.glc-top) { align-items: stretch; min-height: 64px; }
+html[data-workspace-view="layout"] header:not(.glc-top) > button { align-self: center; }
+.pro-ribbon { display: flex; align-items: stretch; margin-inline-start: 6px; border-inline-start: 1px solid hsl(var(--border)); }
+.pro-group { display: flex; flex-direction: column; padding: 2px 6px 1px; border-inline-end: 1px solid hsl(var(--border)); }
+.pro-items { display: flex; align-items: center; gap: 1px; flex: 1; }
+.pro-cap { font-size: 10px; line-height: 12px; text-align: center; color: hsl(var(--muted-foreground)); white-space: nowrap; }
+.pro-ribbon button { display: inline-flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 38px; height: 44px; padding: 2px 4px !important; border-radius: 4px; background: transparent; border: 0; color: hsl(var(--foreground)); font-size: 10.5px; }
+.pro-ribbon button:hover { background: hsl(var(--accent)); }
+.pro-ribbon button.active, .pro-ribbon button.on { background: hsl(var(--primary) / 0.12); color: hsl(var(--primary)); }
+.pro-ribbon button[data-pro-label]::after { content: attr(data-pro-label); font-size: 10px; line-height: 11px; white-space: nowrap; }
+.pro-ribbon .glc-ins > span, .pro-ribbon .glc-ins .glc-caret { display: none; }
+.pro-ribbon .glc-zoompill { display: flex; align-items: center; gap: 2px; }
+.pro-ribbon .glc-zoompill button { min-width: 26px; height: 28px; }
+.pro-ribbon .glc-zoompill button[data-pro-label]::after { content: none; }
+.pro-ribbon .glc-layoutpick { display: flex; align-items: center; gap: 2px; }
+.pro-ribbon .glc-layoutpick select { height: 26px; font-size: 12px; max-width: 120px; }
+.pro-ribbon .glc-layoutpick button { min-width: 26px; height: 28px; }
+.pro-ribbon svg { width: 20px; height: 20px; }
+.pro-ribbon button::before { width: 22px !important; height: 22px !important; }
+/* The composer's own (now mostly empty) top bar is hidden while the ribbon hosts its tools. */
+.glc-root.pro-ribbon-host .glc-top { display: none !important; }
+
+/* Ribbon "Show" group: View-menu style check items with icons. */
+.pro-checks { display: grid !important; grid-template-columns: auto auto; grid-auto-rows: 21px; gap: 0 4px !important; }
+.pro-ribbon .pro-check { flex-direction: row !important; justify-content: flex-start !important; height: 21px !important; min-width: 0 !important; gap: 4px !important; padding: 0 5px !important; font-size: 11px; }
+.pro-ribbon .pro-check svg { width: 15px; height: 15px; }
+.pro-check .pro-box { width: 12px; height: 12px; border: 1px solid #8a96a3; border-radius: 2px; background: #fff; flex: none; }
+.pro-check[aria-checked="true"] .pro-box { background: #0078d4 url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M2.5%206.2%205%208.6%209.6%203.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E") center / 10px no-repeat; border-color: #0078d4; }
+/* Rulers off: collapse the ruler row and column of the composer stage. */
+.glc-root.no-rulers .glc-stage { grid-template-columns: 0 minmax(0, 1fr) !important; grid-template-rows: 0 minmax(0, 1fr) !important; }
+.glc-root.no-rulers .glc-rtop, .glc-root.no-rulers .glc-rleft, .glc-root.no-rulers .glc-rcorner { display: none !important; }
+
+/* Default tint for any other stock icon in menus (kind-specific rules follow). */
+[role="menu"] svg.lucide, [role="menuitem"] svg.lucide { color: #2f7fd6; }
+/* Defani edition: ArcGIS Pro-style colour icons — the stock monochrome
+   lucide icons in menus, dialogs, panels and toolbars are tinted by kind. */
+[role="menu"] svg.lucide-folder,
+[role="menu"] svg.lucide-folder-open,
+[role="menu"] svg.lucide-folder-git-2,
+[role="menu"] svg.lucide-folder-input,
+[role="menu"] svg.lucide-folder-output,
+[role="menu"] svg.lucide-archive,
+[role="menu"] svg.lucide-package,
+[role="dialog"] svg.lucide-folder,
+[role="dialog"] svg.lucide-folder-open,
+[role="dialog"] svg.lucide-folder-git-2,
+[role="dialog"] svg.lucide-folder-input,
+[role="dialog"] svg.lucide-folder-output,
+[role="dialog"] svg.lucide-archive,
+[role="dialog"] svg.lucide-package,
+.toc-header svg.lucide-folder,
+.toc-header svg.lucide-folder-open,
+.toc-header svg.lucide-folder-git-2,
+.toc-header svg.lucide-folder-input,
+.toc-header svg.lucide-folder-output,
+.toc-header svg.lucide-archive,
+.toc-header svg.lucide-package,
+.attr-toolbar svg.lucide-folder,
+.attr-toolbar svg.lucide-folder-open,
+.attr-toolbar svg.lucide-folder-git-2,
+.attr-toolbar svg.lucide-folder-input,
+.attr-toolbar svg.lucide-folder-output,
+.attr-toolbar svg.lucide-archive,
+.attr-toolbar svg.lucide-package,
+.geolibre-attribute-table-panel svg.lucide-folder,
+.geolibre-attribute-table-panel svg.lucide-folder-open,
+.geolibre-attribute-table-panel svg.lucide-folder-git-2,
+.geolibre-attribute-table-panel svg.lucide-folder-input,
+.geolibre-attribute-table-panel svg.lucide-folder-output,
+.geolibre-attribute-table-panel svg.lucide-archive,
+.geolibre-attribute-table-panel svg.lucide-package,
+[data-workspace-row] aside svg.lucide-folder,
+[data-workspace-row] aside svg.lucide-folder-open,
+[data-workspace-row] aside svg.lucide-folder-git-2,
+[data-workspace-row] aside svg.lucide-folder-input,
+[data-workspace-row] aside svg.lucide-folder-output,
+[data-workspace-row] aside svg.lucide-archive,
+[data-workspace-row] aside svg.lucide-package,
+header svg.lucide-folder,
+header svg.lucide-folder-open,
+header svg.lucide-folder-git-2,
+header svg.lucide-folder-input,
+header svg.lucide-folder-output,
+header svg.lucide-archive,
+header svg.lucide-package { color: #c98a00; }
+[role="menu"] svg.lucide-save,
+[role="menu"] svg.lucide-file,
+[role="menu"] svg.lucide-file-text,
+[role="menu"] svg.lucide-file-plus,
+[role="menu"] svg.lucide-file-input,
+[role="menu"] svg.lucide-file-output,
+[role="menu"] svg.lucide-files,
+[role="menu"] svg.lucide-table,
+[role="menu"] svg.lucide-table-2,
+[role="menu"] svg.lucide-table-properties,
+[role="menu"] svg.lucide-sheet,
+[role="menu"] svg.lucide-map,
+[role="menu"] svg.lucide-map-pin,
+[role="menu"] svg.lucide-map-pinned,
+[role="menu"] svg.lucide-globe,
+[role="menu"] svg.lucide-earth,
+[role="menu"] svg.lucide-layers,
+[role="menu"] svg.lucide-layers-2,
+[role="menu"] svg.lucide-layers-3,
+[role="menu"] svg.lucide-copy,
+[role="menu"] svg.lucide-clipboard,
+[role="menu"] svg.lucide-clipboard-paste,
+[role="menu"] svg.lucide-image,
+[role="menu"] svg.lucide-images,
+[role="menu"] svg.lucide-frame,
+[role="menu"] svg.lucide-info,
+[role="menu"] svg.lucide-circle-help,
+[role="menu"] svg.lucide-help-circle,
+[role="menu"] svg.lucide-keyboard,
+[role="menu"] svg.lucide-languages,
+[role="menu"] svg.lucide-monitor,
+[role="menu"] svg.lucide-layout-panel-top,
+[role="menu"] svg.lucide-panel-right,
+[role="menu"] svg.lucide-panel-left,
+[role="menu"] svg.lucide-maximize-2,
+[role="menu"] svg.lucide-minimize-2,
+[role="menu"] svg.lucide-grid-3x3,
+[role="menu"] svg.lucide-locate,
+[role="menu"] svg.lucide-locate-fixed,
+[role="menu"] svg.lucide-navigation,
+[role="menu"] svg.lucide-compass,
+[role="menu"] svg.lucide-crosshair,
+[role="menu"] svg.lucide-mouse-pointer-click,
+[role="menu"] svg.lucide-mouse-pointer-2,
+[role="dialog"] svg.lucide-save,
+[role="dialog"] svg.lucide-file,
+[role="dialog"] svg.lucide-file-text,
+[role="dialog"] svg.lucide-file-plus,
+[role="dialog"] svg.lucide-file-input,
+[role="dialog"] svg.lucide-file-output,
+[role="dialog"] svg.lucide-files,
+[role="dialog"] svg.lucide-table,
+[role="dialog"] svg.lucide-table-2,
+[role="dialog"] svg.lucide-table-properties,
+[role="dialog"] svg.lucide-sheet,
+[role="dialog"] svg.lucide-map,
+[role="dialog"] svg.lucide-map-pin,
+[role="dialog"] svg.lucide-map-pinned,
+[role="dialog"] svg.lucide-globe,
+[role="dialog"] svg.lucide-earth,
+[role="dialog"] svg.lucide-layers,
+[role="dialog"] svg.lucide-layers-2,
+[role="dialog"] svg.lucide-layers-3,
+[role="dialog"] svg.lucide-copy,
+[role="dialog"] svg.lucide-clipboard,
+[role="dialog"] svg.lucide-clipboard-paste,
+[role="dialog"] svg.lucide-image,
+[role="dialog"] svg.lucide-images,
+[role="dialog"] svg.lucide-frame,
+[role="dialog"] svg.lucide-info,
+[role="dialog"] svg.lucide-circle-help,
+[role="dialog"] svg.lucide-help-circle,
+[role="dialog"] svg.lucide-keyboard,
+[role="dialog"] svg.lucide-languages,
+[role="dialog"] svg.lucide-monitor,
+[role="dialog"] svg.lucide-layout-panel-top,
+[role="dialog"] svg.lucide-panel-right,
+[role="dialog"] svg.lucide-panel-left,
+[role="dialog"] svg.lucide-maximize-2,
+[role="dialog"] svg.lucide-minimize-2,
+[role="dialog"] svg.lucide-grid-3x3,
+[role="dialog"] svg.lucide-locate,
+[role="dialog"] svg.lucide-locate-fixed,
+[role="dialog"] svg.lucide-navigation,
+[role="dialog"] svg.lucide-compass,
+[role="dialog"] svg.lucide-crosshair,
+[role="dialog"] svg.lucide-mouse-pointer-click,
+[role="dialog"] svg.lucide-mouse-pointer-2,
+.toc-header svg.lucide-save,
+.toc-header svg.lucide-file,
+.toc-header svg.lucide-file-text,
+.toc-header svg.lucide-file-plus,
+.toc-header svg.lucide-file-input,
+.toc-header svg.lucide-file-output,
+.toc-header svg.lucide-files,
+.toc-header svg.lucide-table,
+.toc-header svg.lucide-table-2,
+.toc-header svg.lucide-table-properties,
+.toc-header svg.lucide-sheet,
+.toc-header svg.lucide-map,
+.toc-header svg.lucide-map-pin,
+.toc-header svg.lucide-map-pinned,
+.toc-header svg.lucide-globe,
+.toc-header svg.lucide-earth,
+.toc-header svg.lucide-layers,
+.toc-header svg.lucide-layers-2,
+.toc-header svg.lucide-layers-3,
+.toc-header svg.lucide-copy,
+.toc-header svg.lucide-clipboard,
+.toc-header svg.lucide-clipboard-paste,
+.toc-header svg.lucide-image,
+.toc-header svg.lucide-images,
+.toc-header svg.lucide-frame,
+.toc-header svg.lucide-info,
+.toc-header svg.lucide-circle-help,
+.toc-header svg.lucide-help-circle,
+.toc-header svg.lucide-keyboard,
+.toc-header svg.lucide-languages,
+.toc-header svg.lucide-monitor,
+.toc-header svg.lucide-layout-panel-top,
+.toc-header svg.lucide-panel-right,
+.toc-header svg.lucide-panel-left,
+.toc-header svg.lucide-maximize-2,
+.toc-header svg.lucide-minimize-2,
+.toc-header svg.lucide-grid-3x3,
+.toc-header svg.lucide-locate,
+.toc-header svg.lucide-locate-fixed,
+.toc-header svg.lucide-navigation,
+.toc-header svg.lucide-compass,
+.toc-header svg.lucide-crosshair,
+.toc-header svg.lucide-mouse-pointer-click,
+.toc-header svg.lucide-mouse-pointer-2,
+.attr-toolbar svg.lucide-save,
+.attr-toolbar svg.lucide-file,
+.attr-toolbar svg.lucide-file-text,
+.attr-toolbar svg.lucide-file-plus,
+.attr-toolbar svg.lucide-file-input,
+.attr-toolbar svg.lucide-file-output,
+.attr-toolbar svg.lucide-files,
+.attr-toolbar svg.lucide-table,
+.attr-toolbar svg.lucide-table-2,
+.attr-toolbar svg.lucide-table-properties,
+.attr-toolbar svg.lucide-sheet,
+.attr-toolbar svg.lucide-map,
+.attr-toolbar svg.lucide-map-pin,
+.attr-toolbar svg.lucide-map-pinned,
+.attr-toolbar svg.lucide-globe,
+.attr-toolbar svg.lucide-earth,
+.attr-toolbar svg.lucide-layers,
+.attr-toolbar svg.lucide-layers-2,
+.attr-toolbar svg.lucide-layers-3,
+.attr-toolbar svg.lucide-copy,
+.attr-toolbar svg.lucide-clipboard,
+.attr-toolbar svg.lucide-clipboard-paste,
+.attr-toolbar svg.lucide-image,
+.attr-toolbar svg.lucide-images,
+.attr-toolbar svg.lucide-frame,
+.attr-toolbar svg.lucide-info,
+.attr-toolbar svg.lucide-circle-help,
+.attr-toolbar svg.lucide-help-circle,
+.attr-toolbar svg.lucide-keyboard,
+.attr-toolbar svg.lucide-languages,
+.attr-toolbar svg.lucide-monitor,
+.attr-toolbar svg.lucide-layout-panel-top,
+.attr-toolbar svg.lucide-panel-right,
+.attr-toolbar svg.lucide-panel-left,
+.attr-toolbar svg.lucide-maximize-2,
+.attr-toolbar svg.lucide-minimize-2,
+.attr-toolbar svg.lucide-grid-3x3,
+.attr-toolbar svg.lucide-locate,
+.attr-toolbar svg.lucide-locate-fixed,
+.attr-toolbar svg.lucide-navigation,
+.attr-toolbar svg.lucide-compass,
+.attr-toolbar svg.lucide-crosshair,
+.attr-toolbar svg.lucide-mouse-pointer-click,
+.attr-toolbar svg.lucide-mouse-pointer-2,
+.geolibre-attribute-table-panel svg.lucide-save,
+.geolibre-attribute-table-panel svg.lucide-file,
+.geolibre-attribute-table-panel svg.lucide-file-text,
+.geolibre-attribute-table-panel svg.lucide-file-plus,
+.geolibre-attribute-table-panel svg.lucide-file-input,
+.geolibre-attribute-table-panel svg.lucide-file-output,
+.geolibre-attribute-table-panel svg.lucide-files,
+.geolibre-attribute-table-panel svg.lucide-table,
+.geolibre-attribute-table-panel svg.lucide-table-2,
+.geolibre-attribute-table-panel svg.lucide-table-properties,
+.geolibre-attribute-table-panel svg.lucide-sheet,
+.geolibre-attribute-table-panel svg.lucide-map,
+.geolibre-attribute-table-panel svg.lucide-map-pin,
+.geolibre-attribute-table-panel svg.lucide-map-pinned,
+.geolibre-attribute-table-panel svg.lucide-globe,
+.geolibre-attribute-table-panel svg.lucide-earth,
+.geolibre-attribute-table-panel svg.lucide-layers,
+.geolibre-attribute-table-panel svg.lucide-layers-2,
+.geolibre-attribute-table-panel svg.lucide-layers-3,
+.geolibre-attribute-table-panel svg.lucide-copy,
+.geolibre-attribute-table-panel svg.lucide-clipboard,
+.geolibre-attribute-table-panel svg.lucide-clipboard-paste,
+.geolibre-attribute-table-panel svg.lucide-image,
+.geolibre-attribute-table-panel svg.lucide-images,
+.geolibre-attribute-table-panel svg.lucide-frame,
+.geolibre-attribute-table-panel svg.lucide-info,
+.geolibre-attribute-table-panel svg.lucide-circle-help,
+.geolibre-attribute-table-panel svg.lucide-help-circle,
+.geolibre-attribute-table-panel svg.lucide-keyboard,
+.geolibre-attribute-table-panel svg.lucide-languages,
+.geolibre-attribute-table-panel svg.lucide-monitor,
+.geolibre-attribute-table-panel svg.lucide-layout-panel-top,
+.geolibre-attribute-table-panel svg.lucide-panel-right,
+.geolibre-attribute-table-panel svg.lucide-panel-left,
+.geolibre-attribute-table-panel svg.lucide-maximize-2,
+.geolibre-attribute-table-panel svg.lucide-minimize-2,
+.geolibre-attribute-table-panel svg.lucide-grid-3x3,
+.geolibre-attribute-table-panel svg.lucide-locate,
+.geolibre-attribute-table-panel svg.lucide-locate-fixed,
+.geolibre-attribute-table-panel svg.lucide-navigation,
+.geolibre-attribute-table-panel svg.lucide-compass,
+.geolibre-attribute-table-panel svg.lucide-crosshair,
+.geolibre-attribute-table-panel svg.lucide-mouse-pointer-click,
+.geolibre-attribute-table-panel svg.lucide-mouse-pointer-2,
+[data-workspace-row] aside svg.lucide-save,
+[data-workspace-row] aside svg.lucide-file,
+[data-workspace-row] aside svg.lucide-file-text,
+[data-workspace-row] aside svg.lucide-file-plus,
+[data-workspace-row] aside svg.lucide-file-input,
+[data-workspace-row] aside svg.lucide-file-output,
+[data-workspace-row] aside svg.lucide-files,
+[data-workspace-row] aside svg.lucide-table,
+[data-workspace-row] aside svg.lucide-table-2,
+[data-workspace-row] aside svg.lucide-table-properties,
+[data-workspace-row] aside svg.lucide-sheet,
+[data-workspace-row] aside svg.lucide-map,
+[data-workspace-row] aside svg.lucide-map-pin,
+[data-workspace-row] aside svg.lucide-map-pinned,
+[data-workspace-row] aside svg.lucide-globe,
+[data-workspace-row] aside svg.lucide-earth,
+[data-workspace-row] aside svg.lucide-layers,
+[data-workspace-row] aside svg.lucide-layers-2,
+[data-workspace-row] aside svg.lucide-layers-3,
+[data-workspace-row] aside svg.lucide-copy,
+[data-workspace-row] aside svg.lucide-clipboard,
+[data-workspace-row] aside svg.lucide-clipboard-paste,
+[data-workspace-row] aside svg.lucide-image,
+[data-workspace-row] aside svg.lucide-images,
+[data-workspace-row] aside svg.lucide-frame,
+[data-workspace-row] aside svg.lucide-info,
+[data-workspace-row] aside svg.lucide-circle-help,
+[data-workspace-row] aside svg.lucide-help-circle,
+[data-workspace-row] aside svg.lucide-keyboard,
+[data-workspace-row] aside svg.lucide-languages,
+[data-workspace-row] aside svg.lucide-monitor,
+[data-workspace-row] aside svg.lucide-layout-panel-top,
+[data-workspace-row] aside svg.lucide-panel-right,
+[data-workspace-row] aside svg.lucide-panel-left,
+[data-workspace-row] aside svg.lucide-maximize-2,
+[data-workspace-row] aside svg.lucide-minimize-2,
+[data-workspace-row] aside svg.lucide-grid-3x3,
+[data-workspace-row] aside svg.lucide-locate,
+[data-workspace-row] aside svg.lucide-locate-fixed,
+[data-workspace-row] aside svg.lucide-navigation,
+[data-workspace-row] aside svg.lucide-compass,
+[data-workspace-row] aside svg.lucide-crosshair,
+[data-workspace-row] aside svg.lucide-mouse-pointer-click,
+[data-workspace-row] aside svg.lucide-mouse-pointer-2,
+header svg.lucide-save,
+header svg.lucide-file,
+header svg.lucide-file-text,
+header svg.lucide-file-plus,
+header svg.lucide-file-input,
+header svg.lucide-file-output,
+header svg.lucide-files,
+header svg.lucide-table,
+header svg.lucide-table-2,
+header svg.lucide-table-properties,
+header svg.lucide-sheet,
+header svg.lucide-map,
+header svg.lucide-map-pin,
+header svg.lucide-map-pinned,
+header svg.lucide-globe,
+header svg.lucide-earth,
+header svg.lucide-layers,
+header svg.lucide-layers-2,
+header svg.lucide-layers-3,
+header svg.lucide-copy,
+header svg.lucide-clipboard,
+header svg.lucide-clipboard-paste,
+header svg.lucide-image,
+header svg.lucide-images,
+header svg.lucide-frame,
+header svg.lucide-info,
+header svg.lucide-circle-help,
+header svg.lucide-help-circle,
+header svg.lucide-keyboard,
+header svg.lucide-languages,
+header svg.lucide-monitor,
+header svg.lucide-layout-panel-top,
+header svg.lucide-panel-right,
+header svg.lucide-panel-left,
+header svg.lucide-maximize-2,
+header svg.lucide-minimize-2,
+header svg.lucide-grid-3x3,
+header svg.lucide-locate,
+header svg.lucide-locate-fixed,
+header svg.lucide-navigation,
+header svg.lucide-compass,
+header svg.lucide-crosshair,
+header svg.lucide-mouse-pointer-click,
+header svg.lucide-mouse-pointer-2 { color: #2f7fd6; }
+[role="menu"] svg.lucide-plus,
+[role="menu"] svg.lucide-plus-circle,
+[role="menu"] svg.lucide-circle-plus,
+[role="menu"] svg.lucide-square-plus,
+[role="menu"] svg.lucide-download,
+[role="menu"] svg.lucide-download-cloud,
+[role="menu"] svg.lucide-cloud-download,
+[role="menu"] svg.lucide-check,
+[role="menu"] svg.lucide-check-circle,
+[role="menu"] svg.lucide-circle-check,
+[role="menu"] svg.lucide-play,
+[role="menu"] svg.lucide-refresh-cw,
+[role="menu"] svg.lucide-rotate-cw,
+[role="menu"] svg.lucide-list-plus,
+[role="menu"] svg.lucide-badge-plus,
+[role="dialog"] svg.lucide-plus,
+[role="dialog"] svg.lucide-plus-circle,
+[role="dialog"] svg.lucide-circle-plus,
+[role="dialog"] svg.lucide-square-plus,
+[role="dialog"] svg.lucide-download,
+[role="dialog"] svg.lucide-download-cloud,
+[role="dialog"] svg.lucide-cloud-download,
+[role="dialog"] svg.lucide-check,
+[role="dialog"] svg.lucide-check-circle,
+[role="dialog"] svg.lucide-circle-check,
+[role="dialog"] svg.lucide-play,
+[role="dialog"] svg.lucide-refresh-cw,
+[role="dialog"] svg.lucide-rotate-cw,
+[role="dialog"] svg.lucide-list-plus,
+[role="dialog"] svg.lucide-badge-plus,
+.toc-header svg.lucide-plus,
+.toc-header svg.lucide-plus-circle,
+.toc-header svg.lucide-circle-plus,
+.toc-header svg.lucide-square-plus,
+.toc-header svg.lucide-download,
+.toc-header svg.lucide-download-cloud,
+.toc-header svg.lucide-cloud-download,
+.toc-header svg.lucide-check,
+.toc-header svg.lucide-check-circle,
+.toc-header svg.lucide-circle-check,
+.toc-header svg.lucide-play,
+.toc-header svg.lucide-refresh-cw,
+.toc-header svg.lucide-rotate-cw,
+.toc-header svg.lucide-list-plus,
+.toc-header svg.lucide-badge-plus,
+.attr-toolbar svg.lucide-plus,
+.attr-toolbar svg.lucide-plus-circle,
+.attr-toolbar svg.lucide-circle-plus,
+.attr-toolbar svg.lucide-square-plus,
+.attr-toolbar svg.lucide-download,
+.attr-toolbar svg.lucide-download-cloud,
+.attr-toolbar svg.lucide-cloud-download,
+.attr-toolbar svg.lucide-check,
+.attr-toolbar svg.lucide-check-circle,
+.attr-toolbar svg.lucide-circle-check,
+.attr-toolbar svg.lucide-play,
+.attr-toolbar svg.lucide-refresh-cw,
+.attr-toolbar svg.lucide-rotate-cw,
+.attr-toolbar svg.lucide-list-plus,
+.attr-toolbar svg.lucide-badge-plus,
+.geolibre-attribute-table-panel svg.lucide-plus,
+.geolibre-attribute-table-panel svg.lucide-plus-circle,
+.geolibre-attribute-table-panel svg.lucide-circle-plus,
+.geolibre-attribute-table-panel svg.lucide-square-plus,
+.geolibre-attribute-table-panel svg.lucide-download,
+.geolibre-attribute-table-panel svg.lucide-download-cloud,
+.geolibre-attribute-table-panel svg.lucide-cloud-download,
+.geolibre-attribute-table-panel svg.lucide-check,
+.geolibre-attribute-table-panel svg.lucide-check-circle,
+.geolibre-attribute-table-panel svg.lucide-circle-check,
+.geolibre-attribute-table-panel svg.lucide-play,
+.geolibre-attribute-table-panel svg.lucide-refresh-cw,
+.geolibre-attribute-table-panel svg.lucide-rotate-cw,
+.geolibre-attribute-table-panel svg.lucide-list-plus,
+.geolibre-attribute-table-panel svg.lucide-badge-plus,
+[data-workspace-row] aside svg.lucide-plus,
+[data-workspace-row] aside svg.lucide-plus-circle,
+[data-workspace-row] aside svg.lucide-circle-plus,
+[data-workspace-row] aside svg.lucide-square-plus,
+[data-workspace-row] aside svg.lucide-download,
+[data-workspace-row] aside svg.lucide-download-cloud,
+[data-workspace-row] aside svg.lucide-cloud-download,
+[data-workspace-row] aside svg.lucide-check,
+[data-workspace-row] aside svg.lucide-check-circle,
+[data-workspace-row] aside svg.lucide-circle-check,
+[data-workspace-row] aside svg.lucide-play,
+[data-workspace-row] aside svg.lucide-refresh-cw,
+[data-workspace-row] aside svg.lucide-rotate-cw,
+[data-workspace-row] aside svg.lucide-list-plus,
+[data-workspace-row] aside svg.lucide-badge-plus,
+header svg.lucide-plus,
+header svg.lucide-plus-circle,
+header svg.lucide-circle-plus,
+header svg.lucide-square-plus,
+header svg.lucide-download,
+header svg.lucide-download-cloud,
+header svg.lucide-cloud-download,
+header svg.lucide-check,
+header svg.lucide-check-circle,
+header svg.lucide-circle-check,
+header svg.lucide-play,
+header svg.lucide-refresh-cw,
+header svg.lucide-rotate-cw,
+header svg.lucide-list-plus,
+header svg.lucide-badge-plus { color: #3ea044; }
+[role="menu"] svg.lucide-trash,
+[role="menu"] svg.lucide-trash-2,
+[role="menu"] svg.lucide-x-circle,
+[role="menu"] svg.lucide-circle-x,
+[role="menu"] svg.lucide-ban,
+[role="menu"] svg.lucide-eraser,
+[role="menu"] svg.lucide-alert-circle,
+[role="menu"] svg.lucide-circle-alert,
+[role="menu"] svg.lucide-alert-triangle,
+[role="menu"] svg.lucide-triangle-alert,
+[role="menu"] svg.lucide-bug,
+[role="menu"] svg.lucide-square,
+[role="menu"] svg.lucide-octagon-x,
+[role="dialog"] svg.lucide-trash,
+[role="dialog"] svg.lucide-trash-2,
+[role="dialog"] svg.lucide-x-circle,
+[role="dialog"] svg.lucide-circle-x,
+[role="dialog"] svg.lucide-ban,
+[role="dialog"] svg.lucide-eraser,
+[role="dialog"] svg.lucide-alert-circle,
+[role="dialog"] svg.lucide-circle-alert,
+[role="dialog"] svg.lucide-alert-triangle,
+[role="dialog"] svg.lucide-triangle-alert,
+[role="dialog"] svg.lucide-bug,
+[role="dialog"] svg.lucide-square,
+[role="dialog"] svg.lucide-octagon-x,
+.toc-header svg.lucide-trash,
+.toc-header svg.lucide-trash-2,
+.toc-header svg.lucide-x-circle,
+.toc-header svg.lucide-circle-x,
+.toc-header svg.lucide-ban,
+.toc-header svg.lucide-eraser,
+.toc-header svg.lucide-alert-circle,
+.toc-header svg.lucide-circle-alert,
+.toc-header svg.lucide-alert-triangle,
+.toc-header svg.lucide-triangle-alert,
+.toc-header svg.lucide-bug,
+.toc-header svg.lucide-square,
+.toc-header svg.lucide-octagon-x,
+.attr-toolbar svg.lucide-trash,
+.attr-toolbar svg.lucide-trash-2,
+.attr-toolbar svg.lucide-x-circle,
+.attr-toolbar svg.lucide-circle-x,
+.attr-toolbar svg.lucide-ban,
+.attr-toolbar svg.lucide-eraser,
+.attr-toolbar svg.lucide-alert-circle,
+.attr-toolbar svg.lucide-circle-alert,
+.attr-toolbar svg.lucide-alert-triangle,
+.attr-toolbar svg.lucide-triangle-alert,
+.attr-toolbar svg.lucide-bug,
+.attr-toolbar svg.lucide-square,
+.attr-toolbar svg.lucide-octagon-x,
+.geolibre-attribute-table-panel svg.lucide-trash,
+.geolibre-attribute-table-panel svg.lucide-trash-2,
+.geolibre-attribute-table-panel svg.lucide-x-circle,
+.geolibre-attribute-table-panel svg.lucide-circle-x,
+.geolibre-attribute-table-panel svg.lucide-ban,
+.geolibre-attribute-table-panel svg.lucide-eraser,
+.geolibre-attribute-table-panel svg.lucide-alert-circle,
+.geolibre-attribute-table-panel svg.lucide-circle-alert,
+.geolibre-attribute-table-panel svg.lucide-alert-triangle,
+.geolibre-attribute-table-panel svg.lucide-triangle-alert,
+.geolibre-attribute-table-panel svg.lucide-bug,
+.geolibre-attribute-table-panel svg.lucide-square,
+.geolibre-attribute-table-panel svg.lucide-octagon-x,
+[data-workspace-row] aside svg.lucide-trash,
+[data-workspace-row] aside svg.lucide-trash-2,
+[data-workspace-row] aside svg.lucide-x-circle,
+[data-workspace-row] aside svg.lucide-circle-x,
+[data-workspace-row] aside svg.lucide-ban,
+[data-workspace-row] aside svg.lucide-eraser,
+[data-workspace-row] aside svg.lucide-alert-circle,
+[data-workspace-row] aside svg.lucide-circle-alert,
+[data-workspace-row] aside svg.lucide-alert-triangle,
+[data-workspace-row] aside svg.lucide-triangle-alert,
+[data-workspace-row] aside svg.lucide-bug,
+[data-workspace-row] aside svg.lucide-square,
+[data-workspace-row] aside svg.lucide-octagon-x,
+header svg.lucide-trash,
+header svg.lucide-trash-2,
+header svg.lucide-x-circle,
+header svg.lucide-circle-x,
+header svg.lucide-ban,
+header svg.lucide-eraser,
+header svg.lucide-alert-circle,
+header svg.lucide-circle-alert,
+header svg.lucide-alert-triangle,
+header svg.lucide-triangle-alert,
+header svg.lucide-bug,
+header svg.lucide-square,
+header svg.lucide-octagon-x { color: #d64545; }
+[role="menu"] svg.lucide-pencil,
+[role="menu"] svg.lucide-pencil-ruler,
+[role="menu"] svg.lucide-pen,
+[role="menu"] svg.lucide-pen-tool,
+[role="menu"] svg.lucide-square-pen,
+[role="menu"] svg.lucide-edit,
+[role="menu"] svg.lucide-edit-3,
+[role="menu"] svg.lucide-brush,
+[role="menu"] svg.lucide-bar-chart,
+[role="menu"] svg.lucide-bar-chart-3,
+[role="menu"] svg.lucide-chart-column,
+[role="menu"] svg.lucide-chart-bar,
+[role="menu"] svg.lucide-chart-line,
+[role="menu"] svg.lucide-line-chart,
+[role="menu"] svg.lucide-pie-chart,
+[role="menu"] svg.lucide-chart-pie,
+[role="menu"] svg.lucide-ruler,
+[role="menu"] svg.lucide-scissors,
+[role="menu"] svg.lucide-wand,
+[role="menu"] svg.lucide-wand-2,
+[role="menu"] svg.lucide-sparkle,
+[role="dialog"] svg.lucide-pencil,
+[role="dialog"] svg.lucide-pencil-ruler,
+[role="dialog"] svg.lucide-pen,
+[role="dialog"] svg.lucide-pen-tool,
+[role="dialog"] svg.lucide-square-pen,
+[role="dialog"] svg.lucide-edit,
+[role="dialog"] svg.lucide-edit-3,
+[role="dialog"] svg.lucide-brush,
+[role="dialog"] svg.lucide-bar-chart,
+[role="dialog"] svg.lucide-bar-chart-3,
+[role="dialog"] svg.lucide-chart-column,
+[role="dialog"] svg.lucide-chart-bar,
+[role="dialog"] svg.lucide-chart-line,
+[role="dialog"] svg.lucide-line-chart,
+[role="dialog"] svg.lucide-pie-chart,
+[role="dialog"] svg.lucide-chart-pie,
+[role="dialog"] svg.lucide-ruler,
+[role="dialog"] svg.lucide-scissors,
+[role="dialog"] svg.lucide-wand,
+[role="dialog"] svg.lucide-wand-2,
+[role="dialog"] svg.lucide-sparkle,
+.toc-header svg.lucide-pencil,
+.toc-header svg.lucide-pencil-ruler,
+.toc-header svg.lucide-pen,
+.toc-header svg.lucide-pen-tool,
+.toc-header svg.lucide-square-pen,
+.toc-header svg.lucide-edit,
+.toc-header svg.lucide-edit-3,
+.toc-header svg.lucide-brush,
+.toc-header svg.lucide-bar-chart,
+.toc-header svg.lucide-bar-chart-3,
+.toc-header svg.lucide-chart-column,
+.toc-header svg.lucide-chart-bar,
+.toc-header svg.lucide-chart-line,
+.toc-header svg.lucide-line-chart,
+.toc-header svg.lucide-pie-chart,
+.toc-header svg.lucide-chart-pie,
+.toc-header svg.lucide-ruler,
+.toc-header svg.lucide-scissors,
+.toc-header svg.lucide-wand,
+.toc-header svg.lucide-wand-2,
+.toc-header svg.lucide-sparkle,
+.attr-toolbar svg.lucide-pencil,
+.attr-toolbar svg.lucide-pencil-ruler,
+.attr-toolbar svg.lucide-pen,
+.attr-toolbar svg.lucide-pen-tool,
+.attr-toolbar svg.lucide-square-pen,
+.attr-toolbar svg.lucide-edit,
+.attr-toolbar svg.lucide-edit-3,
+.attr-toolbar svg.lucide-brush,
+.attr-toolbar svg.lucide-bar-chart,
+.attr-toolbar svg.lucide-bar-chart-3,
+.attr-toolbar svg.lucide-chart-column,
+.attr-toolbar svg.lucide-chart-bar,
+.attr-toolbar svg.lucide-chart-line,
+.attr-toolbar svg.lucide-line-chart,
+.attr-toolbar svg.lucide-pie-chart,
+.attr-toolbar svg.lucide-chart-pie,
+.attr-toolbar svg.lucide-ruler,
+.attr-toolbar svg.lucide-scissors,
+.attr-toolbar svg.lucide-wand,
+.attr-toolbar svg.lucide-wand-2,
+.attr-toolbar svg.lucide-sparkle,
+.geolibre-attribute-table-panel svg.lucide-pencil,
+.geolibre-attribute-table-panel svg.lucide-pencil-ruler,
+.geolibre-attribute-table-panel svg.lucide-pen,
+.geolibre-attribute-table-panel svg.lucide-pen-tool,
+.geolibre-attribute-table-panel svg.lucide-square-pen,
+.geolibre-attribute-table-panel svg.lucide-edit,
+.geolibre-attribute-table-panel svg.lucide-edit-3,
+.geolibre-attribute-table-panel svg.lucide-brush,
+.geolibre-attribute-table-panel svg.lucide-bar-chart,
+.geolibre-attribute-table-panel svg.lucide-bar-chart-3,
+.geolibre-attribute-table-panel svg.lucide-chart-column,
+.geolibre-attribute-table-panel svg.lucide-chart-bar,
+.geolibre-attribute-table-panel svg.lucide-chart-line,
+.geolibre-attribute-table-panel svg.lucide-line-chart,
+.geolibre-attribute-table-panel svg.lucide-pie-chart,
+.geolibre-attribute-table-panel svg.lucide-chart-pie,
+.geolibre-attribute-table-panel svg.lucide-ruler,
+.geolibre-attribute-table-panel svg.lucide-scissors,
+.geolibre-attribute-table-panel svg.lucide-wand,
+.geolibre-attribute-table-panel svg.lucide-wand-2,
+.geolibre-attribute-table-panel svg.lucide-sparkle,
+[data-workspace-row] aside svg.lucide-pencil,
+[data-workspace-row] aside svg.lucide-pencil-ruler,
+[data-workspace-row] aside svg.lucide-pen,
+[data-workspace-row] aside svg.lucide-pen-tool,
+[data-workspace-row] aside svg.lucide-square-pen,
+[data-workspace-row] aside svg.lucide-edit,
+[data-workspace-row] aside svg.lucide-edit-3,
+[data-workspace-row] aside svg.lucide-brush,
+[data-workspace-row] aside svg.lucide-bar-chart,
+[data-workspace-row] aside svg.lucide-bar-chart-3,
+[data-workspace-row] aside svg.lucide-chart-column,
+[data-workspace-row] aside svg.lucide-chart-bar,
+[data-workspace-row] aside svg.lucide-chart-line,
+[data-workspace-row] aside svg.lucide-line-chart,
+[data-workspace-row] aside svg.lucide-pie-chart,
+[data-workspace-row] aside svg.lucide-chart-pie,
+[data-workspace-row] aside svg.lucide-ruler,
+[data-workspace-row] aside svg.lucide-scissors,
+[data-workspace-row] aside svg.lucide-wand,
+[data-workspace-row] aside svg.lucide-wand-2,
+[data-workspace-row] aside svg.lucide-sparkle,
+header svg.lucide-pencil,
+header svg.lucide-pencil-ruler,
+header svg.lucide-pen,
+header svg.lucide-pen-tool,
+header svg.lucide-square-pen,
+header svg.lucide-edit,
+header svg.lucide-edit-3,
+header svg.lucide-brush,
+header svg.lucide-bar-chart,
+header svg.lucide-bar-chart-3,
+header svg.lucide-chart-column,
+header svg.lucide-chart-bar,
+header svg.lucide-chart-line,
+header svg.lucide-line-chart,
+header svg.lucide-pie-chart,
+header svg.lucide-chart-pie,
+header svg.lucide-ruler,
+header svg.lucide-scissors,
+header svg.lucide-wand,
+header svg.lucide-wand-2,
+header svg.lucide-sparkle { color: #ef7d22; }
+[role="menu"] svg.lucide-search,
+[role="menu"] svg.lucide-zoom-in,
+[role="menu"] svg.lucide-zoom-out,
+[role="menu"] svg.lucide-scan,
+[role="menu"] svg.lucide-scan-search,
+[role="menu"] svg.lucide-share,
+[role="menu"] svg.lucide-share-2,
+[role="menu"] svg.lucide-link,
+[role="menu"] svg.lucide-link-2,
+[role="menu"] svg.lucide-external-link,
+[role="menu"] svg.lucide-filter,
+[role="menu"] svg.lucide-funnel,
+[role="menu"] svg.lucide-sigma,
+[role="menu"] svg.lucide-square-function,
+[role="menu"] svg.lucide-calculator,
+[role="menu"] svg.lucide-telescope,
+[role="menu"] svg.lucide-route,
+[role="menu"] svg.lucide-waypoints,
+[role="menu"] svg.lucide-network,
+[role="dialog"] svg.lucide-search,
+[role="dialog"] svg.lucide-zoom-in,
+[role="dialog"] svg.lucide-zoom-out,
+[role="dialog"] svg.lucide-scan,
+[role="dialog"] svg.lucide-scan-search,
+[role="dialog"] svg.lucide-share,
+[role="dialog"] svg.lucide-share-2,
+[role="dialog"] svg.lucide-link,
+[role="dialog"] svg.lucide-link-2,
+[role="dialog"] svg.lucide-external-link,
+[role="dialog"] svg.lucide-filter,
+[role="dialog"] svg.lucide-funnel,
+[role="dialog"] svg.lucide-sigma,
+[role="dialog"] svg.lucide-square-function,
+[role="dialog"] svg.lucide-calculator,
+[role="dialog"] svg.lucide-telescope,
+[role="dialog"] svg.lucide-route,
+[role="dialog"] svg.lucide-waypoints,
+[role="dialog"] svg.lucide-network,
+.toc-header svg.lucide-search,
+.toc-header svg.lucide-zoom-in,
+.toc-header svg.lucide-zoom-out,
+.toc-header svg.lucide-scan,
+.toc-header svg.lucide-scan-search,
+.toc-header svg.lucide-share,
+.toc-header svg.lucide-share-2,
+.toc-header svg.lucide-link,
+.toc-header svg.lucide-link-2,
+.toc-header svg.lucide-external-link,
+.toc-header svg.lucide-filter,
+.toc-header svg.lucide-funnel,
+.toc-header svg.lucide-sigma,
+.toc-header svg.lucide-square-function,
+.toc-header svg.lucide-calculator,
+.toc-header svg.lucide-telescope,
+.toc-header svg.lucide-route,
+.toc-header svg.lucide-waypoints,
+.toc-header svg.lucide-network,
+.attr-toolbar svg.lucide-search,
+.attr-toolbar svg.lucide-zoom-in,
+.attr-toolbar svg.lucide-zoom-out,
+.attr-toolbar svg.lucide-scan,
+.attr-toolbar svg.lucide-scan-search,
+.attr-toolbar svg.lucide-share,
+.attr-toolbar svg.lucide-share-2,
+.attr-toolbar svg.lucide-link,
+.attr-toolbar svg.lucide-link-2,
+.attr-toolbar svg.lucide-external-link,
+.attr-toolbar svg.lucide-filter,
+.attr-toolbar svg.lucide-funnel,
+.attr-toolbar svg.lucide-sigma,
+.attr-toolbar svg.lucide-square-function,
+.attr-toolbar svg.lucide-calculator,
+.attr-toolbar svg.lucide-telescope,
+.attr-toolbar svg.lucide-route,
+.attr-toolbar svg.lucide-waypoints,
+.attr-toolbar svg.lucide-network,
+.geolibre-attribute-table-panel svg.lucide-search,
+.geolibre-attribute-table-panel svg.lucide-zoom-in,
+.geolibre-attribute-table-panel svg.lucide-zoom-out,
+.geolibre-attribute-table-panel svg.lucide-scan,
+.geolibre-attribute-table-panel svg.lucide-scan-search,
+.geolibre-attribute-table-panel svg.lucide-share,
+.geolibre-attribute-table-panel svg.lucide-share-2,
+.geolibre-attribute-table-panel svg.lucide-link,
+.geolibre-attribute-table-panel svg.lucide-link-2,
+.geolibre-attribute-table-panel svg.lucide-external-link,
+.geolibre-attribute-table-panel svg.lucide-filter,
+.geolibre-attribute-table-panel svg.lucide-funnel,
+.geolibre-attribute-table-panel svg.lucide-sigma,
+.geolibre-attribute-table-panel svg.lucide-square-function,
+.geolibre-attribute-table-panel svg.lucide-calculator,
+.geolibre-attribute-table-panel svg.lucide-telescope,
+.geolibre-attribute-table-panel svg.lucide-route,
+.geolibre-attribute-table-panel svg.lucide-waypoints,
+.geolibre-attribute-table-panel svg.lucide-network,
+[data-workspace-row] aside svg.lucide-search,
+[data-workspace-row] aside svg.lucide-zoom-in,
+[data-workspace-row] aside svg.lucide-zoom-out,
+[data-workspace-row] aside svg.lucide-scan,
+[data-workspace-row] aside svg.lucide-scan-search,
+[data-workspace-row] aside svg.lucide-share,
+[data-workspace-row] aside svg.lucide-share-2,
+[data-workspace-row] aside svg.lucide-link,
+[data-workspace-row] aside svg.lucide-link-2,
+[data-workspace-row] aside svg.lucide-external-link,
+[data-workspace-row] aside svg.lucide-filter,
+[data-workspace-row] aside svg.lucide-funnel,
+[data-workspace-row] aside svg.lucide-sigma,
+[data-workspace-row] aside svg.lucide-square-function,
+[data-workspace-row] aside svg.lucide-calculator,
+[data-workspace-row] aside svg.lucide-telescope,
+[data-workspace-row] aside svg.lucide-route,
+[data-workspace-row] aside svg.lucide-waypoints,
+[data-workspace-row] aside svg.lucide-network,
+header svg.lucide-search,
+header svg.lucide-zoom-in,
+header svg.lucide-zoom-out,
+header svg.lucide-scan,
+header svg.lucide-scan-search,
+header svg.lucide-share,
+header svg.lucide-share-2,
+header svg.lucide-link,
+header svg.lucide-link-2,
+header svg.lucide-external-link,
+header svg.lucide-filter,
+header svg.lucide-funnel,
+header svg.lucide-sigma,
+header svg.lucide-square-function,
+header svg.lucide-calculator,
+header svg.lucide-telescope,
+header svg.lucide-route,
+header svg.lucide-waypoints,
+header svg.lucide-network { color: #0f9d8f; }
+[role="menu"] svg.lucide-history,
+[role="menu"] svg.lucide-clock,
+[role="menu"] svg.lucide-undo,
+[role="menu"] svg.lucide-undo-2,
+[role="menu"] svg.lucide-redo,
+[role="menu"] svg.lucide-redo-2,
+[role="menu"] svg.lucide-bot,
+[role="menu"] svg.lucide-sparkles,
+[role="menu"] svg.lucide-brain,
+[role="menu"] svg.lucide-message-square,
+[role="menu"] svg.lucide-message-circle,
+[role="menu"] svg.lucide-messages-square,
+[role="menu"] svg.lucide-users,
+[role="menu"] svg.lucide-user,
+[role="menu"] svg.lucide-rotate-ccw,
+[role="dialog"] svg.lucide-history,
+[role="dialog"] svg.lucide-clock,
+[role="dialog"] svg.lucide-undo,
+[role="dialog"] svg.lucide-undo-2,
+[role="dialog"] svg.lucide-redo,
+[role="dialog"] svg.lucide-redo-2,
+[role="dialog"] svg.lucide-bot,
+[role="dialog"] svg.lucide-sparkles,
+[role="dialog"] svg.lucide-brain,
+[role="dialog"] svg.lucide-message-square,
+[role="dialog"] svg.lucide-message-circle,
+[role="dialog"] svg.lucide-messages-square,
+[role="dialog"] svg.lucide-users,
+[role="dialog"] svg.lucide-user,
+[role="dialog"] svg.lucide-rotate-ccw,
+.toc-header svg.lucide-history,
+.toc-header svg.lucide-clock,
+.toc-header svg.lucide-undo,
+.toc-header svg.lucide-undo-2,
+.toc-header svg.lucide-redo,
+.toc-header svg.lucide-redo-2,
+.toc-header svg.lucide-bot,
+.toc-header svg.lucide-sparkles,
+.toc-header svg.lucide-brain,
+.toc-header svg.lucide-message-square,
+.toc-header svg.lucide-message-circle,
+.toc-header svg.lucide-messages-square,
+.toc-header svg.lucide-users,
+.toc-header svg.lucide-user,
+.toc-header svg.lucide-rotate-ccw,
+.attr-toolbar svg.lucide-history,
+.attr-toolbar svg.lucide-clock,
+.attr-toolbar svg.lucide-undo,
+.attr-toolbar svg.lucide-undo-2,
+.attr-toolbar svg.lucide-redo,
+.attr-toolbar svg.lucide-redo-2,
+.attr-toolbar svg.lucide-bot,
+.attr-toolbar svg.lucide-sparkles,
+.attr-toolbar svg.lucide-brain,
+.attr-toolbar svg.lucide-message-square,
+.attr-toolbar svg.lucide-message-circle,
+.attr-toolbar svg.lucide-messages-square,
+.attr-toolbar svg.lucide-users,
+.attr-toolbar svg.lucide-user,
+.attr-toolbar svg.lucide-rotate-ccw,
+.geolibre-attribute-table-panel svg.lucide-history,
+.geolibre-attribute-table-panel svg.lucide-clock,
+.geolibre-attribute-table-panel svg.lucide-undo,
+.geolibre-attribute-table-panel svg.lucide-undo-2,
+.geolibre-attribute-table-panel svg.lucide-redo,
+.geolibre-attribute-table-panel svg.lucide-redo-2,
+.geolibre-attribute-table-panel svg.lucide-bot,
+.geolibre-attribute-table-panel svg.lucide-sparkles,
+.geolibre-attribute-table-panel svg.lucide-brain,
+.geolibre-attribute-table-panel svg.lucide-message-square,
+.geolibre-attribute-table-panel svg.lucide-message-circle,
+.geolibre-attribute-table-panel svg.lucide-messages-square,
+.geolibre-attribute-table-panel svg.lucide-users,
+.geolibre-attribute-table-panel svg.lucide-user,
+.geolibre-attribute-table-panel svg.lucide-rotate-ccw,
+[data-workspace-row] aside svg.lucide-history,
+[data-workspace-row] aside svg.lucide-clock,
+[data-workspace-row] aside svg.lucide-undo,
+[data-workspace-row] aside svg.lucide-undo-2,
+[data-workspace-row] aside svg.lucide-redo,
+[data-workspace-row] aside svg.lucide-redo-2,
+[data-workspace-row] aside svg.lucide-bot,
+[data-workspace-row] aside svg.lucide-sparkles,
+[data-workspace-row] aside svg.lucide-brain,
+[data-workspace-row] aside svg.lucide-message-square,
+[data-workspace-row] aside svg.lucide-message-circle,
+[data-workspace-row] aside svg.lucide-messages-square,
+[data-workspace-row] aside svg.lucide-users,
+[data-workspace-row] aside svg.lucide-user,
+[data-workspace-row] aside svg.lucide-rotate-ccw,
+header svg.lucide-history,
+header svg.lucide-clock,
+header svg.lucide-undo,
+header svg.lucide-undo-2,
+header svg.lucide-redo,
+header svg.lucide-redo-2,
+header svg.lucide-bot,
+header svg.lucide-sparkles,
+header svg.lucide-brain,
+header svg.lucide-message-square,
+header svg.lucide-message-circle,
+header svg.lucide-messages-square,
+header svg.lucide-users,
+header svg.lucide-user,
+header svg.lucide-rotate-ccw { color: #8a5cc7; }
+[role="menu"] svg.lucide-palette,
+[role="menu"] svg.lucide-paintbrush,
+[role="menu"] svg.lucide-paint-bucket,
+[role="menu"] svg.lucide-droplet,
+[role="menu"] svg.lucide-droplets,
+[role="menu"] svg.lucide-swatch-book,
+[role="menu"] svg.lucide-type,
+[role="menu"] svg.lucide-heading,
+[role="dialog"] svg.lucide-palette,
+[role="dialog"] svg.lucide-paintbrush,
+[role="dialog"] svg.lucide-paint-bucket,
+[role="dialog"] svg.lucide-droplet,
+[role="dialog"] svg.lucide-droplets,
+[role="dialog"] svg.lucide-swatch-book,
+[role="dialog"] svg.lucide-type,
+[role="dialog"] svg.lucide-heading,
+.toc-header svg.lucide-palette,
+.toc-header svg.lucide-paintbrush,
+.toc-header svg.lucide-paint-bucket,
+.toc-header svg.lucide-droplet,
+.toc-header svg.lucide-droplets,
+.toc-header svg.lucide-swatch-book,
+.toc-header svg.lucide-type,
+.toc-header svg.lucide-heading,
+.attr-toolbar svg.lucide-palette,
+.attr-toolbar svg.lucide-paintbrush,
+.attr-toolbar svg.lucide-paint-bucket,
+.attr-toolbar svg.lucide-droplet,
+.attr-toolbar svg.lucide-droplets,
+.attr-toolbar svg.lucide-swatch-book,
+.attr-toolbar svg.lucide-type,
+.attr-toolbar svg.lucide-heading,
+.geolibre-attribute-table-panel svg.lucide-palette,
+.geolibre-attribute-table-panel svg.lucide-paintbrush,
+.geolibre-attribute-table-panel svg.lucide-paint-bucket,
+.geolibre-attribute-table-panel svg.lucide-droplet,
+.geolibre-attribute-table-panel svg.lucide-droplets,
+.geolibre-attribute-table-panel svg.lucide-swatch-book,
+.geolibre-attribute-table-panel svg.lucide-type,
+.geolibre-attribute-table-panel svg.lucide-heading,
+[data-workspace-row] aside svg.lucide-palette,
+[data-workspace-row] aside svg.lucide-paintbrush,
+[data-workspace-row] aside svg.lucide-paint-bucket,
+[data-workspace-row] aside svg.lucide-droplet,
+[data-workspace-row] aside svg.lucide-droplets,
+[data-workspace-row] aside svg.lucide-swatch-book,
+[data-workspace-row] aside svg.lucide-type,
+[data-workspace-row] aside svg.lucide-heading,
+header svg.lucide-palette,
+header svg.lucide-paintbrush,
+header svg.lucide-paint-bucket,
+header svg.lucide-droplet,
+header svg.lucide-droplets,
+header svg.lucide-swatch-book,
+header svg.lucide-type,
+header svg.lucide-heading { color: #e2559a; }
+[role="menu"] svg.lucide-settings,
+[role="menu"] svg.lucide-settings-2,
+[role="menu"] svg.lucide-sliders,
+[role="menu"] svg.lucide-sliders-horizontal,
+[role="menu"] svg.lucide-cog,
+[role="menu"] svg.lucide-eye,
+[role="menu"] svg.lucide-eye-off,
+[role="menu"] svg.lucide-more-horizontal,
+[role="menu"] svg.lucide-more-vertical,
+[role="menu"] svg.lucide-ellipsis,
+[role="menu"] svg.lucide-grip-vertical,
+[role="menu"] svg.lucide-lock,
+[role="menu"] svg.lucide-unlock,
+[role="menu"] svg.lucide-server,
+[role="menu"] svg.lucide-terminal,
+[role="menu"] svg.lucide-square-terminal,
+[role="menu"] svg.lucide-code,
+[role="menu"] svg.lucide-braces,
+[role="dialog"] svg.lucide-settings,
+[role="dialog"] svg.lucide-settings-2,
+[role="dialog"] svg.lucide-sliders,
+[role="dialog"] svg.lucide-sliders-horizontal,
+[role="dialog"] svg.lucide-cog,
+[role="dialog"] svg.lucide-eye,
+[role="dialog"] svg.lucide-eye-off,
+[role="dialog"] svg.lucide-more-horizontal,
+[role="dialog"] svg.lucide-more-vertical,
+[role="dialog"] svg.lucide-ellipsis,
+[role="dialog"] svg.lucide-grip-vertical,
+[role="dialog"] svg.lucide-lock,
+[role="dialog"] svg.lucide-unlock,
+[role="dialog"] svg.lucide-server,
+[role="dialog"] svg.lucide-terminal,
+[role="dialog"] svg.lucide-square-terminal,
+[role="dialog"] svg.lucide-code,
+[role="dialog"] svg.lucide-braces,
+.toc-header svg.lucide-settings,
+.toc-header svg.lucide-settings-2,
+.toc-header svg.lucide-sliders,
+.toc-header svg.lucide-sliders-horizontal,
+.toc-header svg.lucide-cog,
+.toc-header svg.lucide-eye,
+.toc-header svg.lucide-eye-off,
+.toc-header svg.lucide-more-horizontal,
+.toc-header svg.lucide-more-vertical,
+.toc-header svg.lucide-ellipsis,
+.toc-header svg.lucide-grip-vertical,
+.toc-header svg.lucide-lock,
+.toc-header svg.lucide-unlock,
+.toc-header svg.lucide-server,
+.toc-header svg.lucide-terminal,
+.toc-header svg.lucide-square-terminal,
+.toc-header svg.lucide-code,
+.toc-header svg.lucide-braces,
+.attr-toolbar svg.lucide-settings,
+.attr-toolbar svg.lucide-settings-2,
+.attr-toolbar svg.lucide-sliders,
+.attr-toolbar svg.lucide-sliders-horizontal,
+.attr-toolbar svg.lucide-cog,
+.attr-toolbar svg.lucide-eye,
+.attr-toolbar svg.lucide-eye-off,
+.attr-toolbar svg.lucide-more-horizontal,
+.attr-toolbar svg.lucide-more-vertical,
+.attr-toolbar svg.lucide-ellipsis,
+.attr-toolbar svg.lucide-grip-vertical,
+.attr-toolbar svg.lucide-lock,
+.attr-toolbar svg.lucide-unlock,
+.attr-toolbar svg.lucide-server,
+.attr-toolbar svg.lucide-terminal,
+.attr-toolbar svg.lucide-square-terminal,
+.attr-toolbar svg.lucide-code,
+.attr-toolbar svg.lucide-braces,
+.geolibre-attribute-table-panel svg.lucide-settings,
+.geolibre-attribute-table-panel svg.lucide-settings-2,
+.geolibre-attribute-table-panel svg.lucide-sliders,
+.geolibre-attribute-table-panel svg.lucide-sliders-horizontal,
+.geolibre-attribute-table-panel svg.lucide-cog,
+.geolibre-attribute-table-panel svg.lucide-eye,
+.geolibre-attribute-table-panel svg.lucide-eye-off,
+.geolibre-attribute-table-panel svg.lucide-more-horizontal,
+.geolibre-attribute-table-panel svg.lucide-more-vertical,
+.geolibre-attribute-table-panel svg.lucide-ellipsis,
+.geolibre-attribute-table-panel svg.lucide-grip-vertical,
+.geolibre-attribute-table-panel svg.lucide-lock,
+.geolibre-attribute-table-panel svg.lucide-unlock,
+.geolibre-attribute-table-panel svg.lucide-server,
+.geolibre-attribute-table-panel svg.lucide-terminal,
+.geolibre-attribute-table-panel svg.lucide-square-terminal,
+.geolibre-attribute-table-panel svg.lucide-code,
+.geolibre-attribute-table-panel svg.lucide-braces,
+[data-workspace-row] aside svg.lucide-settings,
+[data-workspace-row] aside svg.lucide-settings-2,
+[data-workspace-row] aside svg.lucide-sliders,
+[data-workspace-row] aside svg.lucide-sliders-horizontal,
+[data-workspace-row] aside svg.lucide-cog,
+[data-workspace-row] aside svg.lucide-eye,
+[data-workspace-row] aside svg.lucide-eye-off,
+[data-workspace-row] aside svg.lucide-more-horizontal,
+[data-workspace-row] aside svg.lucide-more-vertical,
+[data-workspace-row] aside svg.lucide-ellipsis,
+[data-workspace-row] aside svg.lucide-grip-vertical,
+[data-workspace-row] aside svg.lucide-lock,
+[data-workspace-row] aside svg.lucide-unlock,
+[data-workspace-row] aside svg.lucide-server,
+[data-workspace-row] aside svg.lucide-terminal,
+[data-workspace-row] aside svg.lucide-square-terminal,
+[data-workspace-row] aside svg.lucide-code,
+[data-workspace-row] aside svg.lucide-braces,
+header svg.lucide-settings,
+header svg.lucide-settings-2,
+header svg.lucide-sliders,
+header svg.lucide-sliders-horizontal,
+header svg.lucide-cog,
+header svg.lucide-eye,
+header svg.lucide-eye-off,
+header svg.lucide-more-horizontal,
+header svg.lucide-more-vertical,
+header svg.lucide-ellipsis,
+header svg.lucide-grip-vertical,
+header svg.lucide-lock,
+header svg.lucide-unlock,
+header svg.lucide-server,
+header svg.lucide-terminal,
+header svg.lucide-square-terminal,
+header svg.lucide-code,
+header svg.lucide-braces { color: #5b6b7f; }
+[role="menu"] svg.lucide-database,
+[role="menu"] svg.lucide-cloud,
+[role="menu"] svg.lucide-cloud-upload,
+[role="menu"] svg.lucide-hard-drive,
+[role="menu"] svg.lucide-upload,
+[role="menu"] svg.lucide-upload-cloud,
+[role="menu"] svg.lucide-cloud-cog,
+[role="dialog"] svg.lucide-database,
+[role="dialog"] svg.lucide-cloud,
+[role="dialog"] svg.lucide-cloud-upload,
+[role="dialog"] svg.lucide-hard-drive,
+[role="dialog"] svg.lucide-upload,
+[role="dialog"] svg.lucide-upload-cloud,
+[role="dialog"] svg.lucide-cloud-cog,
+.toc-header svg.lucide-database,
+.toc-header svg.lucide-cloud,
+.toc-header svg.lucide-cloud-upload,
+.toc-header svg.lucide-hard-drive,
+.toc-header svg.lucide-upload,
+.toc-header svg.lucide-upload-cloud,
+.toc-header svg.lucide-cloud-cog,
+.attr-toolbar svg.lucide-database,
+.attr-toolbar svg.lucide-cloud,
+.attr-toolbar svg.lucide-cloud-upload,
+.attr-toolbar svg.lucide-hard-drive,
+.attr-toolbar svg.lucide-upload,
+.attr-toolbar svg.lucide-upload-cloud,
+.attr-toolbar svg.lucide-cloud-cog,
+.geolibre-attribute-table-panel svg.lucide-database,
+.geolibre-attribute-table-panel svg.lucide-cloud,
+.geolibre-attribute-table-panel svg.lucide-cloud-upload,
+.geolibre-attribute-table-panel svg.lucide-hard-drive,
+.geolibre-attribute-table-panel svg.lucide-upload,
+.geolibre-attribute-table-panel svg.lucide-upload-cloud,
+.geolibre-attribute-table-panel svg.lucide-cloud-cog,
+[data-workspace-row] aside svg.lucide-database,
+[data-workspace-row] aside svg.lucide-cloud,
+[data-workspace-row] aside svg.lucide-cloud-upload,
+[data-workspace-row] aside svg.lucide-hard-drive,
+[data-workspace-row] aside svg.lucide-upload,
+[data-workspace-row] aside svg.lucide-upload-cloud,
+[data-workspace-row] aside svg.lucide-cloud-cog,
+header svg.lucide-database,
+header svg.lucide-cloud,
+header svg.lucide-cloud-upload,
+header svg.lucide-hard-drive,
+header svg.lucide-upload,
+header svg.lucide-upload-cloud,
+header svg.lucide-cloud-cog { color: #1a8fd8; }
+button[class*="bg-primary"] svg.lucide, button[class*="bg-destructive"] svg.lucide, [data-state="checked"] svg.lucide { color: inherit !important; }
+html.dark [role="menu"] svg.lucide, html.dark [role="dialog"] svg.lucide { filter: brightness(1.25); }
+
+/* Defani edition: Kobo Connector docked; its floating map button is hidden. */
+.kobo-connector, .maplibregl-map > .kobo-connector-panel { display: none !important; }
+.kobo-dock .kobo-connector-panel {
+  display: flex !important; flex-direction: column; position: static !important; inset: auto !important; transform: none !important;
+  width: 100% !important; max-width: none !important; max-height: none !important; height: 100%;
+  margin: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  background: hsl(var(--card)) !important; color: hsl(var(--foreground));
+}
+.kobo-dock .kobo-connector-header { display: none !important; }
+.kobo-dock .kobo-connector-content { flex: 1 1 auto; overflow: auto; padding: 10px !important; }
+
+/* ===== Defani edition: ArcGIS Pro ribbon (Data View) ===== */
+.tfg-ribbon { --pr-bg: #ffffff; --pr-tabs: #f3f5f8; --pr-line: #dfe3e8; --pr-text: #1f2937; --pr-muted: #6b7280; --pr-hover: #e6f1fa; --pr-active: #cfe6f7;
+  background: var(--pr-bg); border-bottom: 1px solid var(--pr-line); color: var(--pr-text); font-size: 11.5px; flex-shrink: 0; position: relative; z-index: 30; user-select: none; }
+html.dark .tfg-ribbon { --pr-bg: #2c2c2c; --pr-tabs: #252525; --pr-line: #3a3a3a; --pr-text: #e5e5e5; --pr-muted: #a3a3a3; --pr-hover: #36404a; --pr-active: #1f4a6b; }
+html[data-workspace-view="layout"] .tfg-ribbon { display: none; }
+.pr-tabs { display: flex; align-items: flex-end; gap: 1px; height: 28px; padding: 0 8px; background: var(--pr-tabs); border-bottom: 1px solid var(--pr-line); }
+.pr-tab { height: 26px; padding: 0 12px; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; color: var(--pr-text); font-size: 12px; }
+.pr-tab:hover { color: #0079C1; }
+.pr-tab[aria-selected="true"] { background: var(--pr-bg); border-color: var(--pr-line); color: #0079C1; font-weight: 600; margin-bottom: -1px; height: 27px; }
+.tfg-ribbon[data-collapsed] .pr-tab[aria-selected="true"] { background: transparent; border-color: transparent; }
+.pr-tab-ctx { color: #6b3fa0; }
+.pr-tab-ctx[aria-selected="true"] { color: #6b3fa0; border-top: 2px solid #8e5cc8; }
+.pr-ctx-label { align-self: center; margin-left: 10px; padding: 1px 8px; border-radius: 3px; background: #efe5fa; color: #6b3fa0; font-size: 10.5px; font-weight: 600; }
+html.dark .pr-ctx-label { background: #3b2d50; color: #d3b8f2; }
+.pr-search { align-self: center; display: flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; min-width: 220px; border: 1px solid var(--pr-line); border-radius: 4px; background: var(--pr-bg); color: var(--pr-muted); font-size: 11.5px; }
+.pr-search:hover { border-color: #4FB0EA; }
+.pr-search kbd { margin-left: auto; font-size: 10px; opacity: .7; font-family: inherit; }
+.pr-body { display: flex; align-items: stretch; height: 84px; padding: 3px 4px 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+.pr-group { display: flex; flex-direction: column; padding: 0 6px; border-right: 1px solid var(--pr-line); flex-shrink: 0; }
+.pr-group-body { flex: 1; display: flex; align-items: flex-start; gap: 2px; }
+.pr-group-label { text-align: center; color: var(--pr-muted); font-size: 10.5px; line-height: 15px; padding-bottom: 1px; white-space: nowrap; }
+.pr-stack { display: flex; flex-direction: column; gap: 0; }
+.pr-big { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px; min-width: 50px; max-width: 76px; height: 64px; padding: 4px 4px 2px; border-radius: 3px; border: 1px solid transparent; color: var(--pr-text); line-height: 1.1; text-align: center; }
+.pr-big svg { width: 26px; height: 26px; flex-shrink: 0; }
+.pr-big span { font-size: 11px; }
+.pr-small { display: flex; align-items: center; gap: 5px; height: 21px; padding: 0 6px 0 3px; border-radius: 3px; border: 1px solid transparent; color: var(--pr-text); white-space: nowrap; font-size: 11.5px; }
+.pr-small svg { width: 15px; height: 15px; flex-shrink: 0; }
+.pr-big:hover:not(:disabled), .pr-small:hover:not(:disabled), .pr-tile:hover:not(:disabled) { background: var(--pr-hover); border-color: #9fcdee; }
+.pr-big.is-active, .pr-small.is-active { background: var(--pr-active); border-color: #4FB0EA; }
+.pr-big:disabled, .pr-small:disabled, .pr-tile:disabled { opacity: .4; cursor: default; }
+.pr-gallery { display: grid; grid-template-columns: repeat(6, 74px); grid-auto-rows: 31px; gap: 1px; padding: 1px; border: 1px solid var(--pr-line); border-radius: 3px; background: var(--pr-tabs); }
+.pr-tile { display: flex; align-items: center; gap: 4px; padding: 0 4px; border: 1px solid transparent; border-radius: 2px; background: var(--pr-bg); font-size: 10.5px; line-height: 1.05; text-align: left; color: var(--pr-text); }
+.pr-tile svg { width: 16px; height: 16px; flex-shrink: 0; }
+.pr-form { display: flex; flex-direction: column; gap: 3px; padding-top: 2px; min-width: 130px; }
+.pr-form.pr-wide { min-width: 250px; }
+.pr-form input:not([type=checkbox]):not([type=color]):not([type=range]), .pr-form select { height: 21px; padding: 0 5px; border: 1px solid var(--pr-line); border-radius: 3px; background: var(--pr-bg); color: var(--pr-text); font-size: 11.5px; min-width: 0; }
+.pr-form input[type=number] { width: 46px; }
+.pr-form input[type=color] { width: 24px; height: 21px; padding: 0; border: 1px solid var(--pr-line); border-radius: 3px; background: none; }
+.pr-form input.is-error { border-color: #D23C2F; }
+.pr-row { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.pr-row input[type=range] { width: 90px; accent-color: #0079C1; }
+.pr-check { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.pr-check input { accent-color: #0079C1; }
+.pr-btn { height: 21px; padding: 0 8px; border: 1px solid var(--pr-line); border-radius: 3px; background: var(--pr-tabs); color: var(--pr-text); font-size: 11.5px; white-space: nowrap; }
+.pr-btn:hover { border-color: #4FB0EA; background: var(--pr-hover); }
+.pr-error { max-width: 250px; color: #D23C2F; font-size: 10.5px; line-height: 1.2; white-space: normal; }
+.pr-hint { color: var(--pr-muted); padding: 18px 6px 0; white-space: nowrap; }
+.pr-pop { z-index: 80; min-width: 240px; padding: 8px; border: 1px solid var(--pr-line); border-radius: 5px; background: var(--pr-bg); box-shadow: 0 8px 24px rgba(0,0,0,.18); display: flex; flex-direction: column; gap: 6px; }
+.pr-pop-title { font-weight: 600; color: #0079C1; }
+.pr-pop label { display: flex; flex-direction: column; gap: 2px; color: var(--pr-muted); }
+.pr-pop input { height: 24px; padding: 0 6px; border: 1px solid var(--pr-line); border-radius: 3px; background: var(--pr-bg); color: var(--pr-text); }
+.pr-pop-note { font-size: 10.5px; color: var(--pr-muted); font-variant-numeric: tabular-nums; }
+.pr-pop-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.pr-pop-actions button { height: 24px; padding: 0 10px; border-radius: 3px; border: 1px solid var(--pr-line); }
+.pr-pop-actions button:first-child { background: #0079C1; border-color: #0079C1; color: #fff; }
+.pr-pop-actions button:disabled { opacity: .5; }
+.pr-menu { min-width: 140px; padding: 4px; gap: 0; }
+.pr-menu button { display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 8px; border-radius: 3px; text-align: left; }
+.pr-menu button svg { width: 16px; height: 16px; }
+.pr-menu button:hover { background: var(--pr-hover); }
+.tfg-select-overlay { position: absolute; inset: 0; z-index: 20; cursor: crosshair; touch-action: none; }
+.tfg-select-hint { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); padding: 3px 10px; border-radius: 12px; background: rgba(0,121,193,.92); color: #fff; font-size: 11px; pointer-events: none; white-space: nowrap; }
+.pr-pop { --pr-bg: #ffffff; --pr-tabs: #f3f5f8; --pr-line: #dfe3e8; --pr-text: #1f2937; --pr-muted: #6b7280; --pr-hover: #e6f1fa; color: var(--pr-text); font-size: 11.5px; }
+html.dark .pr-pop { --pr-bg: #2c2c2c; --pr-tabs: #252525; --pr-line: #3a3a3a; --pr-text: #e5e5e5; --pr-muted: #a3a3a3; --pr-hover: #36404a; }
+
+/* ===== Defani edition: header fills the full width, equal buttons, wraps when narrow ===== */
+html:not([data-workspace-view="layout"]) header:not(.glc-top) { flex-wrap: wrap !important; overflow: visible !important; row-gap: 2px; column-gap: 2px; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > button { flex: 1 1 0 !important; min-width: 74px; height: 44px !important; padding-inline: 4px !important; justify-content: center; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > button svg { width: 22px !important; height: 22px !important; flex-shrink: 0; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > button span { font-size: 11px; line-height: 1; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > .relative.ms-2 { margin-inline-start: 4px; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > .ms-auto { margin-inline-start: 0 !important; flex: 0 0 auto; }
+/* Even grid: every cell the same width, filling to the right edge, then the next row lines up in the same columns. */
+html:not([data-workspace-view="layout"]) header:not(.glc-top) { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); align-items: center; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > button { width: 100%; min-width: 0; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > .relative.ms-2 { grid-column: span 2; margin-inline-start: 0; justify-self: stretch; justify-content: center; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > .editor-dock:not(.hidden) { grid-column: 1 / -1; justify-self: start; border: none; padding: 0; }
+html:not([data-workspace-view="layout"]) header:not(.glc-top) > .ms-auto { justify-self: center; }
+
+/* ===== Home tab: the app menu bar inside the ribbon ===== */
+.tfg-ribbon .pr-body[hidden] { display: none; }
+.pr-home { display: none; align-items: flex-start; gap: 2px; flex-shrink: 0; }
+.pr-home[data-active] { display: flex; flex: 1 1 auto; padding: 0 4px; }
+/* Another tab is open: keep only the digitizing toolbar, after that tab's groups. */
+.pr-home:not([data-active]):has(> .editor-dock:not(.hidden)) { display: flex; order: 99; padding-inline-start: 6px; border-inline-start: 1px solid var(--pr-line); }
+.pr-home:not([data-active]) > :not(.editor-dock) { display: none !important; }
+.pr-home > button { display: inline-flex !important; flex-direction: column !important; align-items: center; justify-content: flex-start !important; gap: 4px !important;
+  flex: 1 1 0; min-width: 64px; max-width: 96px; height: 70px !important; padding: 6px 4px 2px !important; border-radius: 3px; border: 1px solid transparent; font-size: 11px !important; color: var(--pr-text); }
+.pr-home > button:hover { background: var(--pr-hover) !important; border-color: #9fcdee; }
+.pr-home > button svg { width: 28px !important; height: 28px !important; flex-shrink: 0; }
+.pr-home > button span { display: block !important; font-size: 11px; line-height: 1.1; white-space: nowrap; }
+.pr-home > .relative.ms-2 { align-self: center; margin-inline-start: 8px; padding-inline-start: 10px; border-inline-start: 1px solid var(--pr-line); }
+.pr-home > .ms-auto { align-self: center; margin-inline-start: 6px !important; }
+.pr-home > .editor-dock:not(.hidden) { display: flex; align-self: center; }
+/* Menu bar folded into the ribbon: the hidden host shows only the editor toolbar. */
+.pr-home > :not(.editor-dock) { display: none !important; }
+.pr-home:has(> .editor-dock:not(.hidden)) { display: flex !important; order: 99; align-self: center; padding-inline: 6px; border-inline-start: 1px solid var(--pr-line); }
+.pr-tab-project { background: #0079C1 !important; color: #fff !important; border-color: #0079C1 !important; font-weight: 600; margin-right: 4px; }
+.pr-tab-project:hover { background: #006aa8 !important; }
+.pr-scale { align-self: center; margin-left: 8px; }
+.pr-scale > * { height: 22px; }
+.pr-theme { align-self: center; display: grid; place-items: center; width: 24px; height: 22px; margin-left: 4px; border-radius: 4px; }
+.pr-theme:hover { background: var(--pr-hover); }
+.pr-pop textarea { padding: 4px 6px; border: 1px solid var(--pr-line); border-radius: 3px; background: var(--pr-bg); color: var(--pr-text); font-family: ui-monospace, monospace; font-size: 11px; resize: vertical; }
+.pr-pop { max-width: 320px; }
+/* Folded group drop-down */
+.pr-group-pop { max-width: 560px !important; }
+.pr-group-pop-title { font-weight: 600; color: #0079C1; padding: 0 2px 2px; }
+.pr-group-pop-body { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; }
+.pr-group-pop-body .pr-stack { min-width: 150px; }
+
+/* Layout ribbon: Map Frame group (activate / fit / data view / zoom / scale) */
+.pro-mapframe .pro-items { align-items: flex-start; gap: 2px; }
+.pro-frame-btn { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 50px; padding: 3px 4px; border-radius: 3px; border: 1px solid transparent; font-size: 10.5px; line-height: 1.1; color: inherit; }
+.pro-frame-btn svg { width: 24px; height: 24px; }
+.pro-frame-btn.small { flex-direction: row; gap: 4px; min-width: 0; padding: 1px 6px 1px 3px; font-size: 11px; height: 21px; }
+.pro-frame-btn.small svg { width: 15px; height: 15px; }
+.pro-frame-btn:hover { background: hsl(var(--accent)); border-color: #9fcdee; }
+.pro-frame-btn.on { background: #cfe6f7; border-color: #4FB0EA; }
+html.dark .pro-frame-btn.on { background: #1f4a6b; }
+.pro-frame-stack { display: flex; flex-direction: column; gap: 1px; }
+.pro-frame-select, .pro-frame-scale { height: 22px; padding: 0 5px; border: 1px solid hsl(var(--border)); border-radius: 3px; background: hsl(var(--background)); color: inherit; font-size: 11.5px; }
+.pro-frame-select { width: 150px; margin-bottom: 3px; }
+.pro-frame-scalerow { display: flex; align-items: center; gap: 4px; font-size: 11.5px; }
+.pro-frame-scale { width: 110px; }
+.pr-recent { display: flex; flex-direction: column; max-width: 190px; }
+.pr-recent .pr-small span { overflow: hidden; text-overflow: ellipsis; }
+
+/* ===== Layer Properties (ArcGIS Pro style, vertical tabs) ===== */
+.lp-win { position: fixed; z-index: 48; width: 840px; height: 600px; max-width: 96vw; max-height: 92vh; display: flex; flex-direction: column;
+  background: hsl(var(--background)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); border-radius: 6px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.25); resize: both; overflow: hidden; font-size: 12.5px; }
+.lp-win.max { inset: 8px !important; width: auto; height: auto; max-width: none; max-height: none; resize: none; }
+.lp-head { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 8px 0 12px; border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / .5); font-weight: 600; cursor: move; user-select: none; }
+.lp-head button { display: grid; place-items: center; width: 26px; height: 24px; border-radius: 4px; cursor: pointer; }
+.lp-head button:hover { background: hsl(var(--accent)); }
+.lp-main { flex: 1; min-height: 0; display: flex; }
+.lp-tabs { width: 168px; flex-shrink: 0; display: flex; flex-direction: column; padding: 6px 0; border-right: 1px solid hsl(var(--border)); background: hsl(var(--muted) / .35); overflow-y: auto; }
+.lp-tabs button { display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 12px; text-align: left; border-left: 3px solid transparent; }
+.lp-tabs button:hover { background: hsl(var(--accent)); }
+.lp-tabs button.on { background: hsl(var(--background)); border-left-color: #0079C1; font-weight: 600; color: #0079C1; }
+html.dark .lp-tabs button.on { color: #4FB0EA; }
+.lp-body { flex: 1; min-width: 0; overflow: auto; padding: 14px 18px; }
+.lp-body.lp-style { padding: 0; }
+.lp-body.lp-style > aside, .lp-body.lp-style aside { position: static !important; width: 100% !important; max-width: none !important; height: 100% !important; border: 0 !important; box-shadow: none !important; }
+.lp-form { display: flex; flex-direction: column; gap: 10px; }
+.lp-row { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: start; }
+.lp-label { padding-top: 5px; color: hsl(var(--muted-foreground)); }
+.lp-value { min-width: 0; padding-top: 4px; }
+.lp-input { width: 100%; padding: 4px 8px; border: 1px solid hsl(var(--border)); border-radius: 4px; background: hsl(var(--background)); color: inherit; font-size: 12.5px; }
+.lp-check { display: inline-flex; align-items: center; gap: 6px; }
+.lp-check input { accent-color: #0079C1; }
+.lp-help { color: hsl(var(--muted-foreground)); font-size: 12px; line-height: 1.45; }
+.lp-help code { padding: 0 4px; border-radius: 3px; background: hsl(var(--muted)); }
+.lp-sub { font-weight: 600; margin-bottom: 4px; }
+.lp-list { height: 160px; overflow-y: auto; border: 1px solid hsl(var(--border)); border-radius: 4px; }
+.lp-list button { display: block; width: 100%; padding: 2px 8px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lp-list button:hover { background: hsl(var(--accent)); }
+.lp-list button.on { background: #cfe6f7; }
+html.dark .lp-list button.on { background: #1f4a6b; }
+.lp-btn { height: 28px; padding: 0 12px; border: 1px solid hsl(var(--border)); border-radius: 4px; background: hsl(var(--muted) / .6); color: inherit; }
+.lp-btn:hover { border-color: #4FB0EA; }
+.lp-btn.primary { background: #0079C1; border-color: #0079C1; color: #fff; }
+.lp-btn.primary:hover { background: #006aa8; }
+.lp-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid hsl(var(--border)); }
+.lp-table { width: 100%; border-collapse: collapse; }
+.lp-table th, .lp-table td { padding: 4px 8px; border-bottom: 1px solid hsl(var(--border)); text-align: left; }
+.lp-table th { position: sticky; top: 0; background: hsl(var(--muted)); font-weight: 600; }
+.lp-embed > * { margin: 0 !important; }

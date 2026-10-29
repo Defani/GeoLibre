@@ -22,9 +22,81 @@
          standalone mode; the standard tag above is what newer browsers expect. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="GeoLibre" />
-    <title>GeoLibre</title>
+    <title>The Funny GIS</title>
   </head>
   <body>
+    <!-- The Funny GIS splash (Defani edition): shown while the app loads, faded
+         out by the app once the map is ready. -->
+    <div id="tfg-splash" aria-live="polite">
+      <style>
+        #tfg-splash { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center;
+          justify-content: center; background: #eef1f4; transition: opacity .45s ease;
+          font-family: "Segoe UI", system-ui, -apple-system, sans-serif; }
+        #tfg-splash.done { opacity: 0; pointer-events: none; }
+        #tfg-splash .card { display: flex; flex-direction: column; align-items: center; gap: 10px;
+          width: 440px; max-width: 92vw; padding: 34px 28px 22px; border-radius: 14px; background: #0079C1; color: #fff;
+          box-shadow: 0 24px 60px rgba(0, 40, 80, .28), 0 2px 8px rgba(0, 0, 0, .12); }
+        #tfg-splash .logo { width: 108px; height: 108px; border-radius: 50%; box-shadow: 0 0 0 4px rgba(255,255,255,.9), 0 6px 18px rgba(0,0,0,.2);
+          animation: tfg-pop .7s cubic-bezier(.2,1.6,.4,1) both, tfg-bob 3.2s ease-in-out .7s infinite; }
+        #tfg-splash .land { animation: tfg-spin 9s linear infinite; }
+        #tfg-splash .eye { transform-box: fill-box; transform-origin: center; animation: tfg-blink 3.6s ease-in-out 1s infinite; }
+        #tfg-splash .pupil { animation: tfg-look 5s ease-in-out 1.2s infinite; }
+        #tfg-splash .smile { stroke-dasharray: 34; stroke-dashoffset: 34; animation: tfg-smile .8s ease-out .5s forwards; }
+        #tfg-splash h1 { animation: tfg-up .5s ease-out .25s both; }
+        #tfg-splash p { animation: tfg-up .5s ease-out .4s both; }
+        @keyframes tfg-pop { 0% { transform: scale(.2) rotate(-25deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+        @keyframes tfg-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes tfg-spin { from { transform: translateX(0); } to { transform: translateX(-116px); } }
+        @keyframes tfg-blink { 0%, 44%, 50%, 100% { transform: scaleY(1); } 47% { transform: scaleY(.1); } }
+        @keyframes tfg-look { 0%, 20%, 100% { transform: translate(0, 0); } 30%, 45% { transform: translate(-5px, 1px); } 60%, 75% { transform: translate(3px, -1px); } }
+        @keyframes tfg-smile { to { stroke-dashoffset: 0; } }
+        @keyframes tfg-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { #tfg-splash * { animation: none !important; } #tfg-splash .smile { stroke-dashoffset: 0; } }
+        #tfg-splash h1 { margin: 8px 0 0; font-size: 27px; font-weight: 800; letter-spacing: -.3px; }
+        #tfg-splash p { margin: 0; font-size: 13px; color: #e3f1fb; }
+        #tfg-splash .bar { position: relative; width: 100%; height: 4px; margin-top: 18px; border-radius: 4px;
+          background: rgba(255,255,255,.22); overflow: hidden; }
+        #tfg-splash .bar::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 35%; border-radius: 4px;
+          background: #ffffff; animation: tfg-run 1.15s ease-in-out infinite; }
+        #tfg-splash .row { display: flex; width: 100%; justify-content: space-between; font-size: 11px; color: #cfe6f6; }
+        @keyframes tfg-run { 0% { transform: translateX(-100%); } 100% { transform: translateX(270%); } }
+      </style>
+      <div class="card">
+        <svg class="logo" viewBox="0 0 128 128" aria-hidden="true">
+          <defs><clipPath id="tfg-earth"><circle cx="64" cy="64" r="58"/></clipPath></defs>
+          <circle cx="64" cy="64" r="58" fill="#0079C1"/>
+          <g clip-path="url(#tfg-earth)" fill="#4FB0EA">
+            <g class="land">
+              <g><path d="M14 30c10-8 24-10 32-4 6 5 2 12 6 18 3 5 10 6 9 13-1 8-11 9-14 16-3 8 4 15 0 24-3 7-10 10-14 6-5-6-1-15-6-22-5-6-14-8-16-17-2-10 2-26 3-34Z"/><path d="M78 14c9-3 22 0 30 8 6 6 9 15 4 20-4 4-11 1-15 6-3 4 1 10-2 16-4 7-3 16-8 22-4 5-11 4-13-3-2-8 3-17 0-25-2-6-10-8-11-15-1-9 6-25 15-29Z"/><path d="M100 86c6-2 13 1 15 6 1 5-4 9-10 9s-11-3-11-8c0-3 2-6 6-7Z"/></g>
+              <g transform="translate(116 0)"><path d="M14 30c10-8 24-10 32-4 6 5 2 12 6 18 3 5 10 6 9 13-1 8-11 9-14 16-3 8 4 15 0 24-3 7-10 10-14 6-5-6-1-15-6-22-5-6-14-8-16-17-2-10 2-26 3-34Z"/><path d="M78 14c9-3 22 0 30 8 6 6 9 15 4 20-4 4-11 1-15 6-3 4 1 10-2 16-4 7-3 16-8 22-4 5-11 4-13-3-2-8 3-17 0-25-2-6-10-8-11-15-1-9 6-25 15-29Z"/><path d="M100 86c6-2 13 1 15 6 1 5-4 9-10 9s-11-3-11-8c0-3 2-6 6-7Z"/></g>
+            </g>
+          </g>
+          <g class="eye"><ellipse cx="48" cy="56" rx="11" ry="13" fill="#fff"/><g class="pupil"><circle cx="51" cy="59" r="5.5" fill="#0079C1"/><circle cx="53" cy="57" r="1.8" fill="#fff"/></g></g>
+          <g class="eye"><ellipse cx="80" cy="56" rx="11" ry="13" fill="#fff"/><g class="pupil"><circle cx="83" cy="59" r="5.5" fill="#0079C1"/><circle cx="85" cy="57" r="1.8" fill="#fff"/></g></g>
+          <path class="smile" d="M52 84c7 7 17 7 24 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <h1>The Funny GIS</h1>
+        <p>Personal GIS tool by Defani Arman</p>
+        <div class="bar"></div>
+        <div class="row" style="justify-content:center"><span id="tfg-splash-status">Starting…</span></div>
+      </div>
+      <script>
+        (function () {
+          var steps = ["Starting…", "Loading the map engine…", "Loading tools and toolboxes…", "Preparing the workspace…"];
+          var i = 0, el = document.getElementById("tfg-splash-status");
+          var timer = setInterval(function () { i = Math.min(i + 1, steps.length - 1); if (el) el.textContent = steps[i]; }, 1400);
+          window.__tfgHideSplash = function () {
+            var s = document.getElementById("tfg-splash");
+            clearInterval(timer);
+            if (!s || s.classList.contains("done")) return;
+            s.classList.add("done");
+            setTimeout(function () { s.remove(); }, 500);
+          };
+          // Never block the app: hide after 25 s whatever happens.
+          setTimeout(function () { window.__tfgHideSplash && window.__tfgHideSplash(); }, 25000);
+        })();
+      </script>
+    </div>
     <div id="root"></div>
     <script src="%BASE_URL%geolibre-runtime-config.js"></script>
     <script type="module" src="/src/main.tsx"></script>

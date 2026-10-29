@@ -465,7 +465,7 @@ export const BUILT_IN_STYLE_PRESETS: readonly StyleLibraryEntry[] = [
     tags: ["basemap", "polygon"],
     style: {
       fillColor: "#e5e7eb",
-      fillOpacity: 0.35,
+      fillOpacity: 1,
       strokeColor: "#9ca3af",
       strokeWidth: 1,
       fillPattern: "none",
@@ -479,7 +479,7 @@ export const BUILT_IN_STYLE_PRESETS: readonly StyleLibraryEntry[] = [
     tags: ["polygon", "selection"],
     style: {
       fillColor: "#facc15",
-      fillOpacity: 0.45,
+      fillOpacity: 1,
       strokeColor: "#d97706",
       strokeWidth: 2,
       fillPattern: "none",
@@ -493,7 +493,7 @@ export const BUILT_IN_STYLE_PRESETS: readonly StyleLibraryEntry[] = [
     tags: ["polygon", "hydrology"],
     style: {
       fillColor: "#60a5fa",
-      fillOpacity: 0.5,
+      fillOpacity: 1,
       strokeColor: "#2563eb",
       strokeWidth: 1,
       fillPattern: "none",

@@ -1,4 +1,5 @@
 import { shouldZoomToNewLayers, detectNonGeographicCoordinates, useAppStore } from "@geolibre/core";
+import { openLargeVectorsAsTiles } from "../../lib/tiled-vector";
 import type { MapEngine } from "@geolibre/map";
 import { getLayerBounds } from "@geolibre/map";
 import { addRasterToMap, setKmlFileImportHandler, TIME_SLIDER_PLUGIN_ID } from "@geolibre/plugins";
@@ -380,6 +381,8 @@ export function useLayerImport({
           const count = await addDroppedRasters(await loadDroppedRasterPaths([path]));
           return count > 0 ? null : t("browser.addFileFailed");
         }
+        // Defani edition: large files open as native tiles.
+        if ((await openLargeVectorsAsTiles([path])).tiled > 0) return null;
         let cancelled = false;
         const importedLayers = await loadDroppedVectorPaths([path], {
           // Same large-dataset confirmation the drag-and-drop / Open Vector File

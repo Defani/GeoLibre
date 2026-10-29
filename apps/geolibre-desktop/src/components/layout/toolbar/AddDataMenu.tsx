@@ -1,3 +1,4 @@
+import { ProAddDataIcon } from "./ProIcons";
 import {
   Button,
   DropdownMenu,
@@ -7,7 +8,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@geolibre/ui";
-import { Database } from "lucide-react";
 import { useAppStore, type MapRendererKind } from "@geolibre/core";
 import { Fragment, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +25,7 @@ import {
 } from "../../../lib/ui-profile";
 import type { AddLayerHandlers, ToolbarChrome } from "./constants";
 import { PluginMenuContributions } from "./PluginMenuContributions";
+import { publishAddDataActions } from "../../../lib/add-data-actions";
 
 interface AddDataMenuProps {
   chrome: ToolbarChrome;
@@ -142,6 +143,9 @@ export function AddDataMenu({
   // profile (and the mobile rule for the database sources, and the Mac App Store rule for
   // the sidecar/martin-only sources). Sections with no visible items are
   // dropped along with their header/separator.
+  // Defani edition: share the handlers with the Manage Layers toolbar.
+  publishAddDataActions(handlers);
+
   const sections = DATA_SOURCE_SECTION_ORDER.map((section) => ({
     section,
     entries: DATA_SOURCE_CATALOG.filter(
@@ -163,7 +167,7 @@ export function AddDataMenu({
           aria-label={t("toolbar.menu.addData")}
           disabled={disabled}
         >
-          <Database className={chrome.iconClassName} />
+          <ProAddDataIcon className={chrome.iconClassName} />
           {chrome.renderLabel(t("toolbar.menu.addData"))}
         </Button>
       </DropdownMenuTrigger>

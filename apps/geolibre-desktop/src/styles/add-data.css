@@ -1,0 +1,38 @@
+/* Defani edition: ArcGIS Pro-style Add Data dialog. */
+.ad-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: rgba(0, 0, 0, .28); }
+.ad-dialog { width: 980px; height: 620px; max-width: 96vw; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; resize: both;
+  background: hsl(var(--background)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); border-radius: 6px; box-shadow: 0 22px 60px rgba(0,0,0,.3); font-size: 12.5px; }
+.ad-head { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 8px 0 12px; border-bottom: 1px solid hsl(var(--border)); background: hsl(var(--muted) / .5); font-weight: 600; }
+.ad-head button { display: grid; place-items: center; width: 28px; height: 26px; border-radius: 4px; }
+.ad-head button:hover { background: hsl(var(--accent)); }
+.ad-bar { display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-bottom: 1px solid hsl(var(--border)); }
+.ad-bar > button { display: grid; place-items: center; width: 30px; height: 28px; border: 1px solid transparent; border-radius: 4px; }
+.ad-bar > button:hover:not(:disabled) { background: #e6f1fa; border-color: #9fcdee; }
+html.dark .ad-bar > button:hover:not(:disabled) { background: #36404a; }
+.ad-bar > button:disabled { opacity: .35; }
+.ad-address { flex: 1; height: 28px; padding: 0 8px; border: 1px solid hsl(var(--border)); border-radius: 4px; background: hsl(var(--background)); color: inherit; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.ad-search { display: flex; align-items: center; gap: 6px; width: 210px; height: 28px; padding: 0 8px; border: 1px solid hsl(var(--border)); border-radius: 4px; }
+.ad-search input { flex: 1; min-width: 0; background: transparent; outline: none; }
+.ad-main { flex: 1; min-height: 0; display: flex; }
+.ad-nav { width: 210px; flex-shrink: 0; overflow-y: auto; padding: 6px; border-right: 1px solid hsl(var(--border)); background: hsl(var(--muted) / .3); }
+.ad-nav-cap { margin: 8px 4px 3px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: hsl(var(--muted-foreground)); }
+.ad-nav-item { display: flex; align-items: center; gap: 7px; width: 100%; padding: 4px 6px; border-radius: 4px; text-align: left; white-space: nowrap; overflow: hidden; }
+.ad-nav-item span { overflow: hidden; text-overflow: ellipsis; }
+.ad-nav-item:hover { background: hsl(var(--accent)); }
+.ad-nav-item.on { background: #cfe6f7; }
+html.dark .ad-nav-item.on { background: #1f4a6b; }
+.ad-list { flex: 1; min-width: 0; overflow: auto; }
+.ad-list table { width: 100%; border-collapse: collapse; }
+.ad-list th { position: sticky; top: 0; z-index: 1; padding: 5px 10px; text-align: left; font-weight: 600; background: hsl(var(--muted)); border-bottom: 1px solid hsl(var(--border)); white-space: nowrap; }
+.ad-list td { padding: 3px 10px; white-space: nowrap; cursor: default; }
+.ad-list tr:hover td { background: #eef6fc; }
+html.dark .ad-list tr:hover td { background: #2b3540; }
+.ad-list tr.on td { background: #cfe6f7; }
+html.dark .ad-list tr.on td { background: #1f4a6b; }
+.ad-name { display: flex; align-items: center; gap: 7px; }
+.ad-empty { padding: 30px !important; text-align: center; color: hsl(var(--muted-foreground)); }
+.ad-foot { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid hsl(var(--border)); }
+.ad-namefield { flex: 1; display: flex; align-items: center; gap: 8px; }
+.ad-namefield input { flex: 1; height: 28px; padding: 0 8px; border: 1px solid hsl(var(--border)); border-radius: 4px; background: hsl(var(--background)); color: inherit; }
+.ad-foot select { height: 28px; padding: 0 6px; border: 1px solid hsl(var(--border)); border-radius: 4px; background: hsl(var(--background)); color: inherit; }
+.ad-foot .lp-btn { min-width: 76px; }

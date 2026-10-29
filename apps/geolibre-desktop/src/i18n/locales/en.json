@@ -2748,7 +2748,8 @@
       "environment": "Environment",
       "cloudStorage": "Cloud Storage",
       "updates": "Updates",
-      "startup": "Startup"
+      "startup": "Startup",
+      "performance": "Performance"
     },
     "cloudStorage": {
       "title": "S3 connections",
@@ -4262,6 +4263,11 @@
       "queryableLayers": "Queryable layers:",
       "queryLabel": "SQL query",
       "engineOption": "Engine: {{name}}",
+      "source": "DuckDB data source",
+      "sourceLocal": "Source: local (in-browser)",
+      "sourceConnection": "Source: {{name}}",
+      "sourceConnectionHint": "DuckDB (desktop sidecar) is attached read-only to {{name}}. Query its tables directly, e.g. SELECT * FROM public.my_table.",
+      "sourceNoConnections": "No saved PostgreSQL connections: add one via Add Data → PostgreSQL to query it here.",
       "sampleQueries": "Sample queries…",
       "sampleQueriesLabel": "Insert a sample query",
       "history": "History…",
@@ -4290,6 +4296,8 @@
       "columnsCount_other": "{{count}} columns",
       "samples": {
         "countriesGeom": "Countries with geometry",
+        "connectionTables": "List tables in the connection",
+        "connectionGeometryColumns": "List spatial tables (geometry_columns)",
         "attributesOnly": "Attributes only (no geometry)",
         "populationByContinent": "Population by continent (aggregate)",
         "mostPopulous": "Most populous countries (geometry)",

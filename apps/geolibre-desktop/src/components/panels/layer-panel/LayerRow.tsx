@@ -3,6 +3,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   useMemo,
 } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   IDENTIFY_ALL_LAYERS_ID,
@@ -28,10 +29,6 @@ import {
 import { arcGISLayerHasPendingEdits, isArcGISWritableLayer } from "@geolibre/plugins";
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@geolibre/ui";
 import {
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  EyeOff,
   Filter,
   GripVertical,
   Info,
@@ -46,7 +43,7 @@ import {
 import { layerFilteredHintKey } from "../../../lib/layer-filter-hint";
 import { getLayerRefreshConfig } from "../../../lib/layer-refresh";
 import { notify } from "../../../lib/notify";
-import { LayerSwatchIcon } from "../LayerSwatchIcon";
+import { LayerTocLegend, TocCheckbox } from "./LayerTocLegend";
 import {
   hasNativeIdentifyLayers,
   layerTypeLabel,
@@ -142,7 +139,6 @@ export function LayerRow({
   const setLayerVisibility = useAppStore((s) => s.setLayerVisibility);
   const setLayerOpacity = useAppStore((s) => s.setLayerOpacity);
   const primaryRenderer = useAppStore((s) => s.primaryRenderer);
-  const reorderLayer = useAppStore((s) => s.reorderLayer);
   const selectLayer = useAppStore((s) => s.selectLayer);
   const setIdentifyLayer = useAppStore((s) => s.setIdentifyLayer);
   const { collaboration, mapControllerRef, beginRename, onOpenStylePanel } = menu;
@@ -264,18 +260,18 @@ export function LayerRow({
   // Compact rows keep only the header line; the selected row (and any row
   // mid-rename or mid-edit) still shows its slider and actions.
   const [compactLayerList] = useCompactLayerList();
+  const [contextAt, setContextAt] = useState<{ x: number; y: number } | null>(null);
   const showDetails = !compactLayerList || selected || editing || geometryEditActive;
   return (
     <div
       data-testid="layer-row"
       data-layer-name={layer.name}
       data-layer-id={layer.id}
-      className={`relative min-w-0 max-w-full rounded-md border transition-colors ${
-        showDetails ? "p-2" : "px-2 py-0.5"
-      } ${
+      // Defani edition: thin ArcMap table-of-contents rows (no card border).
+      className={`toc-row relative min-w-0 max-w-full px-1 py-px ${
         selected
-          ? "border-primary bg-primary/5"
-          : "border-border bg-background hover:border-muted-foreground/40 hover:bg-muted/20"
+          ? "bg-[#cce8ff] outline outline-1 outline-[#99d1ff] dark:bg-primary/20 dark:outline-primary/40"
+          : "hover:bg-[#e5f1fb] dark:hover:bg-accent/60"
       } ${dragged ? "opacity-50" : ""} ${
         // Nested rows get a calculated inline width below so
         // their indentation cannot overflow the panel.
@@ -297,7 +293,36 @@ export function LayerRow({
       role="listitem"
       aria-level={group ? groupDepth(group) + 2 : 1}
       onClick={(e) => onSelect(e, layer.id)}
+      onContextMenu={(e) => {
+        // Defani edition: right-click opens the layer menu at the cursor (ArcGIS).
+        e.preventDefault();
+        e.stopPropagation();
+        onSelect(e, layer.id);
+        setContextAt({ x: e.clientX, y: e.clientY });
+      }}
     >
+      {contextAt ? (
+        <DropdownMenu open onOpenChange={(open) => !open && setContextAt(null)}>
+          <DropdownMenuTrigger asChild>
+            <span aria-hidden style={{ position: "fixed", left: contextAt.x, top: contextAt.y, width: 1, height: 1 }} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="max-h-[80vh] overflow-y-auto" onClick={(e: ReactMouseEvent) => e.stopPropagation()}>
+            <LayerActionsMenuItems
+              shared={menu}
+              layer={layer}
+              layerCaps={layerCaps}
+              layerRendered={layerRendered}
+              identifyOwnsClicks={identifyOwnsClicks}
+              geometryEditActive={geometryEditActive}
+              geometryEditElsewhere={geometryEditElsewhere}
+              isLayerLocked={isLayerLocked}
+              layerEditable={layerEditable}
+              refreshConfig={refreshConfig}
+              isRefreshing={isRefreshing}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
       {dropTarget && draggedDisplayIndex > displayIndex && (
         <div className="pointer-events-none absolute -top-1 left-2 right-2 h-1 rounded-full bg-primary shadow-[0_0_0_2px_hsl(var(--background))]" />
       )}
@@ -312,7 +337,7 @@ export function LayerRow({
           aria-label={t("layers.dragNamedToReorder", {
             name: layer.name,
           })}
-          className="touch-none select-none cursor-grab rounded p-0.5 text-muted-foreground hover:bg-muted active:cursor-grabbing"
+          className="toc-grip touch-none select-none cursor-grab rounded p-0.5 text-muted-foreground hover:bg-muted active:cursor-grabbing"
           onClick={(e: ReactMouseEvent) => e.stopPropagation()}
           onPointerDown={(e) => onPointerDown(e, layer.id)}
           onPointerMove={onPointerMove}
@@ -340,13 +365,9 @@ export function LayerRow({
             setLayerVisibility(layer.id, !layer.visible);
           }}
         >
-          {layer.visible ? (
-            <Eye className={`h-3.5 w-3.5 ${groupHidden ? "text-muted-foreground" : ""}`} />
-          ) : (
-            <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
-          )}
+          {/* Defani edition: ArcMap checkbox; the symbol shows under the name. */}
+          <TocCheckbox checked={layer.visible} dim={groupHidden} />
         </button>
-        <LayerSwatchIcon layer={layer} />
         {editing ? (
           <input
             autoFocus
@@ -465,6 +486,8 @@ export function LayerRow({
           {layerTypeLabel(layer, t)}
         </span>
       </div>
+      {/* Defani edition: ArcMap-style symbology under the layer name. */}
+      {layer.visible ? <LayerTocLegend layer={layer} /> : null}
       {/* Placeholder detection checks MapLibre source ids, which the
           globe's own layers never create. Suppress it only for the
           kinds Cesium actually draws — a kind it cannot draw (e.g.
@@ -530,7 +553,9 @@ export function LayerRow({
           slider is only shown when the plugin bridged a setter for
           it — otherwise it would move with no effect (#1445) — or
           when the primary renderer draws the layer itself. */}
-      {showDetails &&
+      {/* ArcMap keeps opacity in the layer's properties, not in the TOC row:
+          the slider shows only while editing. */}
+      {(editing || geometryEditActive) &&
         (!pluginOwnsPaint(layer) ||
           supportsBridgedOpacity(layer.id) ||
           rendererAppliesOpacity(layer, primaryRenderer)) && (
@@ -542,33 +567,7 @@ export function LayerRow({
           />
         )}
       {showDetails && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            title={t("layers.moveUp")}
-            aria-label={t("layers.moveUp")}
-            onClick={(e) => {
-              e.stopPropagation();
-              reorderLayer(layer.id, "up");
-            }}
-          >
-            <ChevronUp className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            title={t("layers.moveDown")}
-            aria-label={t("layers.moveDown")}
-            onClick={(e) => {
-              e.stopPropagation();
-              reorderLayer(layer.id, "down");
-            }}
-          >
-            <ChevronDown className="h-3.5 w-3.5" />
-          </Button>
+        <div className="toc-actions ms-5 mt-0.5 flex flex-wrap gap-0.5">
           <Button
             variant="ghost"
             size="icon"

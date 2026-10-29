@@ -1,4 +1,6 @@
 import type { RefObject } from "react";
+import { Settings2 } from "lucide-react";
+import { openLayerProperties } from "../LayerPropertiesWindow";
 import { useTranslation } from "react-i18next";
 import {
   activeLayerFilterExpression,
@@ -373,6 +375,12 @@ export function LayerActionsMenuItems({
   const moveIds = selectedMoveIds(layer.id);
   return (
     <>
+      {/* Defani edition: ArcGIS-style Layer Properties (right-click › Properties). */}
+      <DropdownMenuItem onSelect={() => openLayerProperties(layer.id)}>
+        <Settings2 className="me-2 h-3.5 w-3.5 text-[#0079C1]" />
+        <span className="font-semibold">Properties…</span>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
       {collaboration.isActive && collaboration.role === "host" && (
         <>
           <DropdownMenuItem

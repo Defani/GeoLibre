@@ -1,4 +1,6 @@
 mod arcgis_http;
+mod gpu_pref;
+mod fs_browse;
 mod aws_credentials;
 mod aws_sts;
 mod plugin_http;
@@ -51,6 +53,39 @@ mod native_duckdb {
         _override_source_crs: Option<String>,
     ) -> Result<serde_json::Value, String> {
         Err("Native DuckDB is not enabled in this build.".to_string())
+    }
+
+    pub mod tiles {
+        const OFF: &str = "Native vector tiles need the native-duckdb build.";
+        #[tauri::command]
+        pub async fn open_tiled_vector(_path: String, _layer: Option<String>, _override_source_crs: Option<String>) -> Result<serde_json::Value, String> {
+            Err(OFF.to_string())
+        }
+        #[tauri::command]
+        pub async fn query_tiled_vector(_id: String, _where_clause: Option<String>, _fids: Option<Vec<i64>>, _limit: Option<u32>, _offset: Option<u32>) -> Result<serde_json::Value, String> {
+            Err(OFF.to_string())
+        }
+        #[tauri::command]
+        pub async fn tiled_vector_geojson(_id: String, _where_clause: Option<String>, _limit: Option<u32>) -> Result<serde_json::Value, String> {
+            Err(OFF.to_string())
+        }
+        #[tauri::command]
+        pub fn mark_tiled_vectors_saved(_ids: Vec<String>) {}
+        #[tauri::command]
+        pub fn cleanup_tiled_vectors(_keep: Vec<String>, _max_gb: Option<f64>) -> u64 {
+            0
+        }
+        #[tauri::command]
+        pub fn tiled_vector_cache_info() -> serde_json::Value {
+            serde_json::json!({})
+        }
+        #[tauri::command]
+        pub async fn tiled_vector_field_stats(_id: String, _field: String, _numeric: Option<bool>) -> Result<serde_json::Value, String> {
+            Err(OFF.to_string())
+        }
+        pub fn protocol_response(_path: &str) -> tauri::http::Response<Vec<u8>> {
+            tauri::http::Response::builder().status(501).body(Vec::new()).unwrap()
+        }
     }
 }
 
@@ -408,11 +443,20 @@ impl Drop for JupyterProcess {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     configure_linux_webkit();
+    #[cfg(target_os = "windows")]
+    gpu_pref::apply_gpu_preference();
 
     let pending_project_paths = PendingProjectPaths(Mutex::new(VecDeque::from(
         project_paths_from_args(env::args_os().skip(1), &current_working_directory()),
     )));
-    let builder = tauri::Builder::default();
+    let builder = tauri::Builder::default()
+        // Defani edition: native vector tiles for very large layers (tfgtile://).
+        .register_asynchronous_uri_scheme_protocol("tfgtile", |_ctx, request, responder| {
+            let path = request.uri().path().to_string();
+            std::thread::spawn(move || {
+                responder.respond(native_duckdb::tiles::protocol_response(&path));
+            });
+        });
 
     // Windows and Linux deliver a file-association launch by starting another
     // process with the document path in argv. Keep one workspace and forward
@@ -492,6 +536,11 @@ pub fn run() {
     let app = builder
         .invoke_handler(tauri::generate_handler![
             close_oauth_popups,
+            gpu_pref::get_gpu_preference,
+            fs_browse::tfg_list_drives,
+            fs_browse::tfg_list_dir,
+            fs_browse::tfg_known_folders,
+            gpu_pref::set_gpu_preference,
             native_duckdb::count_native_vector_file_features,
             ensure_martin_binary,
             fetch_url_bytes,
@@ -510,6 +559,13 @@ pub fn run() {
             aws_credentials::aws_sso_login_poll,
             install_external_plugin_archive,
             native_duckdb::load_native_vector_file,
+            native_duckdb::tiles::open_tiled_vector,
+            native_duckdb::tiles::query_tiled_vector,
+            native_duckdb::tiles::tiled_vector_geojson,
+            native_duckdb::tiles::mark_tiled_vectors_saved,
+            native_duckdb::tiles::cleanup_tiled_vectors,
+            native_duckdb::tiles::tiled_vector_cache_info,
+            native_duckdb::tiles::tiled_vector_field_stats,
             load_external_plugin_bundles,
             pick_image_paths,
             read_selected_image,

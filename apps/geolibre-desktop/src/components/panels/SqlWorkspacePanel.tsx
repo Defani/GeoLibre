@@ -25,6 +25,13 @@ import {
   type SqlQueryResult,
 } from "../../lib/sql-workspace";
 import { runPostgisQuery } from "../../lib/pglite-workspace";
+import { runDuckdbPostgresWorkspaceQuery } from "../../lib/duckdb-postgres-workspace";
+import { isDesktopRuntime } from "../../lib/is-mobile";
+import {
+  POSTGRES_CONNECTIONS_CHANGED_EVENT,
+  readSavedPostgresConnections,
+  savedPostgresConnectionLabel,
+} from "../../lib/saved-postgres-connections";
 import { runSedonaQuery } from "../../lib/sedona-workspace";
 import { sqlQueryLayerMetadata } from "../../lib/sql-query-layer";
 import {
@@ -34,6 +41,7 @@ import {
 import { saveBinaryFileWithFallback } from "../../lib/tauri-io";
 import { useSqlCompletion } from "../../lib/useSqlCompletion";
 import { PANEL_RESIZE_END_EVENT, PANEL_RESIZE_START_EVENT } from "../../lib/panel-resize";
+import { closeSqlPanel } from "../../hooks/useRegisterSqlPanel";
 
 const CSV_MIME_TYPE = "text/csv";
 
@@ -65,6 +73,48 @@ function saveEngine(engine: SqlEngine): void {
     window.localStorage.setItem(ENGINE_STORAGE_KEY, engine);
   } catch {
     // Best-effort persistence only.
+  }
+}
+
+// The DuckDB engine's data source: "" runs in DuckDB-WASM (local), otherwise
+// the password-masked label of a saved PostgreSQL connection that the sidecar's
+// native DuckDB attaches. Only the masked label is stored, never the DSN.
+const DUCKDB_SOURCE_STORAGE_KEY = "geolibre.sqlWorkspace.duckdbSource";
+
+function loadDuckdbSource(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return window.localStorage.getItem(DUCKDB_SOURCE_STORAGE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function saveDuckdbSource(label: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DUCKDB_SOURCE_STORAGE_KEY, label);
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
+/** Short, credential-free name for a saved connection ("Supabase <ref>" or host/db). */
+function connectionDisplayName(connection: string): string {
+  try {
+    const url = new URL(connection);
+    const database = url.pathname.replace(/^\//, "") || "postgres";
+    if (url.hostname.endsWith(".supabase.com") || url.hostname.endsWith(".supabase.co")) {
+      // Pooler users are "postgres.<ref>"; direct hosts are "db.<ref>.supabase.co".
+      const ref =
+        decodeURIComponent(url.username).split(".")[1] ??
+        url.hostname.match(/^db\.([^.]+)\./)?.[1] ??
+        url.hostname;
+      return `Supabase ${ref}/${database}`;
+    }
+    return `${url.hostname}/${database}`;
+  } catch {
+    return savedPostgresConnectionLabel(connection);
   }
 }
 
@@ -108,6 +158,19 @@ const SAMPLE_QUERIES: ReadonlyArray<SampleQuery> = [
   {
     labelKey: "toolbar.sqlWorkspace.samples.largestByArea",
     sql: `SELECT NAME, ST_Area(geom) AS area\nFROM ${SAMPLE_DATASET_URL}\nORDER BY area DESC\nLIMIT 10;`,
+  },
+];
+
+// Examples for the DuckDB engine on a saved PostgreSQL connection (attached as
+// `db` and selected with USE, so its schemas resolve unqualified).
+const CONNECTION_SAMPLE_QUERIES: ReadonlyArray<SampleQuery> = [
+  {
+    labelKey: "toolbar.sqlWorkspace.samples.connectionTables",
+    sql: "SELECT table_schema, table_name, table_type\nFROM information_schema.tables\nWHERE table_schema NOT IN ('pg_catalog', 'information_schema')\nORDER BY 1, 2;",
+  },
+  {
+    labelKey: "toolbar.sqlWorkspace.samples.connectionGeometryColumns",
+    sql: "SELECT f_table_schema, f_table_name, f_geometry_column, type, srid\nFROM public.geometry_columns\nORDER BY 1, 2;",
   },
 ];
 
@@ -247,8 +310,13 @@ function formatCell(value: unknown): string {
  * immediate feedback, and the editor autocompletes layer tables, columns, SQL
  * keywords, and spatial functions. Rendered only while open.
  */
-export function SqlWorkspacePanel() {
-  const setSqlWorkspaceOpen = useAppStore((s) => s.setSqlWorkspaceOpen);
+export function SqlWorkspacePanel({ variant = "bottom" }: { variant?: "bottom" | "sidebar" } = {}) {
+  // Defani edition: "sidebar" renders inside the right dock (editor above the
+  // results, no height handle); the dock chrome owns collapse and close.
+  const sidebar = variant === "sidebar";
+  const setSqlWorkspaceOpenStore = useAppStore((s) => s.setSqlWorkspaceOpen);
+  const setSqlWorkspaceOpen = (open: boolean) =>
+    sidebar && !open ? closeSqlPanel() : setSqlWorkspaceOpenStore(open);
   const layers = useAppStore((s) => s.layers);
   const addGeoJsonLayer = useAppStore((s) => s.addGeoJsonLayer);
   const updateLayer = useAppStore((s) => s.updateLayer);
@@ -272,6 +340,10 @@ export function SqlWorkspacePanel() {
   const [editorFraction, setEditorFraction] = useState(DEFAULT_EDITOR_FRACTION);
   const [collapsed, setCollapsed] = useState(false);
   const [engine, setEngine] = useState<SqlEngine>(loadEngine);
+  const [duckdbSourceLabel, setDuckdbSourceLabel] = useState(loadDuckdbSource);
+  const [savedConnections, setSavedConnections] = useState<string[]>(() =>
+    isDesktopRuntime() ? readSavedPostgresConnections() : [],
+  );
   const [sql, setSql] = useState(SAMPLE_QUERY);
   const [running, setRunning] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -286,7 +358,27 @@ export function SqlWorkspacePanel() {
   const [lastRun, setLastRun] = useState<{
     sql: string;
     engine: SqlEngine;
+    /** True when the DuckDB statement ran against a saved connection. */
+    remote: boolean;
   } | null>(null);
+
+  // Keep the connection list in step with the Add Data dialog / Browser panel.
+  useEffect(() => {
+    if (!isDesktopRuntime()) return;
+    const refresh = () => setSavedConnections(readSavedPostgresConnections());
+    refresh();
+    window.addEventListener(POSTGRES_CONNECTIONS_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(POSTGRES_CONNECTIONS_CHANGED_EVENT, refresh);
+  }, []);
+
+  // The persisted label resolves back to its DSN; a forgotten connection falls
+  // back to the local source.
+  const duckdbConnection =
+    engine === "duckdb" && duckdbSourceLabel
+      ? (savedConnections.find(
+          (connection) => savedPostgresConnectionLabel(connection) === duckdbSourceLabel,
+        ) ?? null)
+      : null;
 
   // A single pass over the layers supplies both the columns (for autocomplete)
   // and the table names; deriving `tables` from it avoids walking the layers a
@@ -302,7 +394,9 @@ export function SqlWorkspacePanel() {
       ? POSTGIS_SAMPLE_QUERIES
       : engine === "sedona"
         ? SEDONA_SAMPLE_QUERIES
-        : SAMPLE_QUERIES;
+        : duckdbConnection
+          ? CONNECTION_SAMPLE_QUERIES
+          : SAMPLE_QUERIES;
   // DuckDB can read files/URLs directly; PostGIS and Sedona query loaded layers.
   const queriesLayersOnly = engine === "postgis" || engine === "sedona";
 
@@ -397,9 +491,11 @@ export function SqlWorkspacePanel() {
           ? await runPostgisQuery(trimmed, layers)
           : engine === "sedona"
             ? await runSedonaQuery(trimmed, layers)
-            : await runSqlQuery(trimmed, layers);
+            : duckdbConnection
+              ? await runDuckdbPostgresWorkspaceQuery(duckdbConnection, trimmed)
+              : await runSqlQuery(trimmed, layers);
       setResult(queryResult);
-      setLastRun({ sql: trimmed, engine });
+      setLastRun({ sql: trimmed, engine, remote: !!duckdbConnection });
     } catch (err) {
       setResult(null);
       setError(describeQueryError(err));
@@ -432,13 +528,15 @@ export function SqlWorkspacePanel() {
   };
 
   // A live query layer only makes sense for a DuckDB result: refresh re-runs
-  // the stored SQL through the DuckDB engine (refreshSqlQueryLayer).
-  const canAddAsQueryLayer = !!result?.geojson && lastRun?.engine === "duckdb";
+  // the stored SQL through the DuckDB-WASM engine (refreshSqlQueryLayer), which
+  // cannot reach a saved connection, so connection results add as plain layers.
+  const canAddAsQueryLayer =
+    !!result?.geojson && lastRun?.engine === "duckdb" && !lastRun.remote;
 
   // Like handleAddAsLayer, but the executed SQL is stored on the layer so it
   // can be re-run later (Refresh / auto-refresh in the Layers panel).
   const handleAddAsQueryLayer = () => {
-    if (!result?.geojson || lastRun?.engine !== "duckdb") return;
+    if (!result?.geojson || lastRun?.engine !== "duckdb" || lastRun.remote) return;
     setError(null);
     const featureCount = result.geojson.features.length;
     const name = layerName.trim() || `SQL query ${new Date().toLocaleTimeString()}`;
@@ -650,11 +748,11 @@ export function SqlWorkspacePanel() {
     <section
       ref={sectionRef}
       aria-label={t("toolbar.sqlWorkspace.title")}
-      className="relative flex shrink-0 flex-col border-t bg-card"
+      className={sidebar ? "relative flex h-full min-h-0 flex-col bg-card" : "relative flex shrink-0 flex-col border-t bg-card"}
       // Collapsed: drop the fixed height so the panel hugs its header.
-      style={collapsed ? undefined : { height }}
+      style={collapsed || sidebar ? undefined : { height }}
     >
-      {collapsed ? null : (
+      {collapsed || sidebar ? null : (
         <div
           role="separator"
           aria-orientation="horizontal"
@@ -689,7 +787,37 @@ export function SqlWorkspacePanel() {
             {t("toolbar.sqlWorkspace.engineOption", { name: "Apache Sedona" })}
           </option>
         </Select>
-        <div className="ms-auto flex items-center gap-1">
+        {engine === "duckdb" && isDesktopRuntime() ? (
+          <Select
+            aria-label={t("toolbar.sqlWorkspace.source")}
+            className="h-7 w-auto max-w-[16rem] text-xs"
+            value={duckdbConnection ? duckdbSourceLabel : ""}
+            onChange={(event) => {
+              setDuckdbSourceLabel(event.target.value);
+              saveDuckdbSource(event.target.value);
+              setResult(null);
+              setError(null);
+            }}
+          >
+            <option value="">{t("toolbar.sqlWorkspace.sourceLocal")}</option>
+            {savedConnections.length === 0 ? (
+              <option value="" disabled>
+                {t("toolbar.sqlWorkspace.sourceNoConnections")}
+              </option>
+            ) : null}
+            {savedConnections.map((connection) => {
+              const label = savedPostgresConnectionLabel(connection);
+              return (
+                <option key={label} value={label}>
+                  {t("toolbar.sqlWorkspace.sourceConnection", {
+                    name: connectionDisplayName(connection),
+                  })}
+                </option>
+              );
+            })}
+          </Select>
+        ) : null}
+        <div className={`ms-auto flex items-center gap-1 ${sidebar ? "hidden" : ""}`}>
           <Button
             variant="ghost"
             size="icon"
@@ -718,13 +846,13 @@ export function SqlWorkspacePanel() {
       <div
         id="sql-workspace-body"
         ref={splitContainerRef}
-        className={`flex min-h-0 flex-1 ${collapsed ? "hidden" : ""}`}
+        className={`flex min-h-0 flex-1 ${sidebar ? "flex-col" : ""} ${collapsed ? "hidden" : ""}`}
       >
         {/* Editor pane (left) */}
         <div
           ref={editorPaneRef}
           className="flex min-w-0 shrink-0 grow-0 flex-col gap-2 p-3"
-          style={{ flexBasis: `${editorFraction * 100}%` }}
+          style={{ flexBasis: sidebar ? "45%" : `${editorFraction * 100}%` }}
         >
           <div className="flex flex-wrap items-center gap-2">
             <Select
@@ -788,7 +916,13 @@ export function SqlWorkspacePanel() {
             ) : null}
           </div>
 
-          {tables.length > 0 ? (
+          {duckdbConnection ? (
+            <p className="text-xs text-muted-foreground">
+              {t("toolbar.sqlWorkspace.sourceConnectionHint", {
+                name: connectionDisplayName(duckdbConnection),
+              })}
+            </p>
+          ) : tables.length > 0 ? (
             <p className="text-xs text-muted-foreground">
               {t("toolbar.sqlWorkspace.queryableLayers")}{" "}
               {tables.map((tableName, index) => (
@@ -881,8 +1015,8 @@ export function SqlWorkspacePanel() {
           role="separator"
           aria-orientation="vertical"
           aria-label={t("toolbar.sqlWorkspace.resizeEditor")}
-          className="w-1 shrink-0 cursor-col-resize select-none bg-border hover:bg-primary"
-          onMouseDown={startEditorResize}
+          className={sidebar ? "h-px shrink-0 bg-border" : "w-1 shrink-0 cursor-col-resize select-none bg-border hover:bg-primary"}
+          onMouseDown={sidebar ? undefined : startEditorResize}
         />
 
         {/* Results pane (right) */}

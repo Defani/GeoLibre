@@ -3830,6 +3830,14 @@ DEFAULT_LABEL_STYLE: dict[str, Any] = {
     "rotation": 0,
     "maxWidth": 10,
     "transform": "none",
+    "prefix": "",
+    "suffix": "",
+    "prefixOwnLine": False,
+    "suffixOwnLine": False,
+    "justify": "center",
+    "letterSpacing": 0,
+    "lineHeight": 1.2,
+    "haloBlur": 0,
     "numberFormatEnabled": False,
     "numberDecimals": 0,
     "numberLocale": "",
@@ -3856,6 +3864,7 @@ LABEL_ANCHORS = frozenset(
     }
 )
 LABEL_TRANSFORMS = frozenset({"none", "uppercase", "lowercase"})
+LABEL_JUSTIFY = frozenset({"left", "center", "right"})
 LABEL_DEDUPE_MODES = frozenset({"off", "unique", "concatenate"})
 #: ``LABEL_NUMBER_LOCALES`` in ``packages/core/src/label-number-format.ts``;
 #: the empty string follows the app's own language.
@@ -3877,6 +3886,14 @@ _LABEL_OPTIONS: dict[str, tuple[str, str]] = {
     "rotation": ("rotation", "number"),
     "max_width": ("maxWidth", "positive"),
     "transform": ("transform", "transform"),
+    "prefix": ("prefix", "text"),
+    "suffix": ("suffix", "text"),
+    "prefix_own_line": ("prefixOwnLine", "bool"),
+    "suffix_own_line": ("suffixOwnLine", "bool"),
+    "justify": ("justify", "justify"),
+    "letter_spacing": ("letterSpacing", "number"),
+    "line_height": ("lineHeight", "positive"),
+    "halo_blur": ("haloBlur", "non_negative"),
     "number_format": ("numberFormatEnabled", "bool"),
     "number_decimals": ("numberDecimals", "decimals"),
     "number_locale": ("numberLocale", "locale"),
@@ -3895,6 +3912,7 @@ _LABEL_ENUMS = {
     "placement": LABEL_PLACEMENTS,
     "anchor": LABEL_ANCHORS,
     "transform": LABEL_TRANSFORMS,
+    "justify": LABEL_JUSTIFY,
     "dedupe": LABEL_DEDUPE_MODES,
     "locale": LABEL_NUMBER_LOCALES,
 }
@@ -3931,6 +3949,10 @@ def _label_value(name: str, kind: str, value: Any) -> Any:
         if value is None or value == "":
             return ""
         return json.dumps(_parse_expression(value, name), separators=(",", ":"))
+    if kind == "text":
+        if not isinstance(value, str):
+            raise ValueError(f"{name} must be a string, got {value!r}")
+        return value
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{name} must be a number, got {value!r}")
     number = float(value)
@@ -3974,7 +3996,11 @@ def label_style(
             (``"point"``/``"line"``), ``size``, ``color``, ``halo_color``,
             ``halo_width``, ``min_zoom``, ``max_zoom``, ``allow_overlap``,
             ``anchor``, ``offset_x``, ``offset_y``, ``rotation``, ``max_width``,
-            ``transform``, ``number_format``, ``number_decimals``,
+            ``transform``, ``prefix``, ``suffix`` (text around the value,
+            e.g. ``prefix="Desa "``), ``prefix_own_line``, ``suffix_own_line``,
+            ``justify`` (``"left"``/``"center"``/``"right"``),
+            ``letter_spacing``, ``line_height``, ``halo_blur``,
+            ``number_format``, ``number_decimals``,
             ``number_locale``, ``dedupe``, and the data-defined
             ``size_expression``, ``color_expression``, ``opacity_expression``,
             ``visibility_expression``, ``priority_expression``. ``None``

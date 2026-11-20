@@ -778,12 +778,16 @@
               "text-rotate": 0,
               "text-max-width": 10,
               "text-transform": "none",
+              "text-justify": "center",
+              "text-letter-spacing": 0,
+              "text-line-height": 1.2,
               "visibility": "visible"
             },
             "paint": {
               "text-color": "#111827",
               "text-halo-color": "#ffffff",
               "text-halo-width": 1.5,
+              "text-halo-blur": 0,
               "text-opacity": 0.8
             }
           },
@@ -925,6 +929,7 @@
         ["getPaintProperty", "layer-poly-label", "text-color"],
         ["getPaintProperty", "layer-poly-label", "text-halo-color"],
         ["getPaintProperty", "layer-poly-label", "text-halo-width"],
+        ["getPaintProperty", "layer-poly-label", "text-halo-blur"],
         ["getPaintProperty", "layer-poly-label", "text-opacity"],
         ["getLayoutProperty", "layer-poly-label", "text-field"],
         ["setLayoutProperty", "layer-poly-label", "text-field", ["upcase", ["get", "name"]]],
@@ -938,6 +943,9 @@
         ["getLayoutProperty", "layer-poly-label", "text-rotate"],
         ["getLayoutProperty", "layer-poly-label", "text-max-width"],
         ["getLayoutProperty", "layer-poly-label", "text-transform"],
+        ["getLayoutProperty", "layer-poly-label", "text-justify"],
+        ["getLayoutProperty", "layer-poly-label", "text-letter-spacing"],
+        ["getLayoutProperty", "layer-poly-label", "text-line-height"],
         ["getLayoutProperty", "layer-poly-label", "symbol-sort-key"],
         ["setLayoutProperty", "layer-poly-label", "symbol-sort-key", null],
         ["getLayoutProperty", "layer-poly-label", "visibility"],
@@ -1082,6 +1090,7 @@
         ["getPaintProperty", "layer-poly-label", "text-color"],
         ["getPaintProperty", "layer-poly-label", "text-halo-color"],
         ["getPaintProperty", "layer-poly-label", "text-halo-width"],
+        ["getPaintProperty", "layer-poly-label", "text-halo-blur"],
         ["getPaintProperty", "layer-poly-label", "text-opacity"],
         ["getLayoutProperty", "layer-poly-label", "text-field"],
         [
@@ -1101,6 +1110,9 @@
         ["getLayoutProperty", "layer-poly-label", "text-rotate"],
         ["getLayoutProperty", "layer-poly-label", "text-max-width"],
         ["getLayoutProperty", "layer-poly-label", "text-transform"],
+        ["getLayoutProperty", "layer-poly-label", "text-justify"],
+        ["getLayoutProperty", "layer-poly-label", "text-letter-spacing"],
+        ["getLayoutProperty", "layer-poly-label", "text-line-height"],
         ["getLayoutProperty", "layer-poly-label", "symbol-sort-key"],
         ["getLayoutProperty", "layer-poly-label", "visibility"],
         ["getFilter", "layer-poly-label"],
@@ -1403,12 +1415,16 @@
               "text-rotate": 0,
               "text-max-width": 10,
               "text-transform": "none",
+              "text-justify": "center",
+              "text-letter-spacing": 0,
+              "text-line-height": 1.2,
               "visibility": "visible"
             },
             "paint": {
               "text-color": "#111827",
               "text-halo-color": "#ffffff",
               "text-halo-width": 1.5,
+              "text-halo-blur": 0,
               "text-opacity": 0.8
             }
           },
@@ -1550,6 +1566,7 @@
         ["getPaintProperty", "layer-poly-label", "text-color"],
         ["getPaintProperty", "layer-poly-label", "text-halo-color"],
         ["getPaintProperty", "layer-poly-label", "text-halo-width"],
+        ["getPaintProperty", "layer-poly-label", "text-halo-blur"],
         ["getPaintProperty", "layer-poly-label", "text-opacity"],
         ["getLayoutProperty", "layer-poly-label", "text-field"],
         ["getLayoutProperty", "layer-poly-label", "text-font"],
@@ -1563,6 +1580,9 @@
         ["getLayoutProperty", "layer-poly-label", "text-rotate"],
         ["getLayoutProperty", "layer-poly-label", "text-max-width"],
         ["getLayoutProperty", "layer-poly-label", "text-transform"],
+        ["getLayoutProperty", "layer-poly-label", "text-justify"],
+        ["getLayoutProperty", "layer-poly-label", "text-letter-spacing"],
+        ["getLayoutProperty", "layer-poly-label", "text-line-height"],
         ["getLayoutProperty", "layer-poly-label", "symbol-sort-key"],
         ["setLayoutProperty", "layer-poly-label", "symbol-sort-key", ["get", "pop"]],
         ["getLayoutProperty", "layer-poly-label", "visibility"],
@@ -3635,12 +3655,16 @@
               "text-rotate": 0,
               "text-max-width": 10,
               "text-transform": "none",
+              "text-justify": "center",
+              "text-letter-spacing": 0,
+              "text-line-height": 1.2,
               "visibility": "visible"
             },
             "paint": {
               "text-color": "#111827",
               "text-halo-color": "#ffffff",
               "text-halo-width": 1.5,
+              "text-halo-blur": 0,
               "text-opacity": 0.8
             }
           },
@@ -4992,12 +5016,16 @@
               "text-rotate": 0,
               "text-max-width": 10,
               "text-transform": "none",
+              "text-justify": "center",
+              "text-letter-spacing": 0,
+              "text-line-height": 1.2,
               "visibility": "visible"
             },
             "paint": {
               "text-color": "#111827",
               "text-halo-color": "#ffffff",
               "text-halo-width": 1.5,
+              "text-halo-blur": 0,
               "text-opacity": 0.8
             }
           },
@@ -5148,6 +5176,7 @@
         ["getPaintProperty", "layer-pts-label", "text-color"],
         ["getPaintProperty", "layer-pts-label", "text-halo-color"],
         ["getPaintProperty", "layer-pts-label", "text-halo-width"],
+        ["getPaintProperty", "layer-pts-label", "text-halo-blur"],
         ["getPaintProperty", "layer-pts-label", "text-opacity"],
         ["getLayoutProperty", "layer-pts-label", "text-field"],
         ["getLayoutProperty", "layer-pts-label", "text-font"],
@@ -5160,6 +5189,9 @@
         ["getLayoutProperty", "layer-pts-label", "text-rotate"],
         ["getLayoutProperty", "layer-pts-label", "text-max-width"],
         ["getLayoutProperty", "layer-pts-label", "text-transform"],
+        ["getLayoutProperty", "layer-pts-label", "text-justify"],
+        ["getLayoutProperty", "layer-pts-label", "text-letter-spacing"],
+        ["getLayoutProperty", "layer-pts-label", "text-line-height"],
         ["getLayoutProperty", "layer-pts-label", "symbol-sort-key"],
         ["setLayoutProperty", "layer-pts-label", "symbol-sort-key", null],
         ["getLayoutProperty", "layer-pts-label", "visibility"],
@@ -5309,12 +5341,16 @@
               "text-rotate": 0,
               "text-max-width": 10,
               "text-transform": "none",
+              "text-justify": "center",
+              "text-letter-spacing": 0,
+              "text-line-height": 1.2,
               "visibility": "visible"
             },
             "paint": {
               "text-color": "#111827",
               "text-halo-color": "#ffffff",
               "text-halo-width": 1.5,
+              "text-halo-blur": 0,
               "text-opacity": 0.8
             }
           },
@@ -6530,12 +6566,16 @@
               "text-rotate": 0,
               "text-max-width": 10,
               "text-transform": "none",
+              "text-justify": "center",
+              "text-letter-spacing": 0,
+              "text-line-height": 1.2,
               "visibility": "visible"
             },
             "paint": {
               "text-color": "#111827",
               "text-halo-color": "#ffffff",
               "text-halo-width": 1.5,
+              "text-halo-blur": 0,
               "text-opacity": 0.8
             }
           },
@@ -7343,12 +7383,16 @@
               "text-rotate": 0,
               "text-max-width": 10,
               "text-transform": "none",
+              "text-justify": "center",
+              "text-letter-spacing": 0,
+              "text-line-height": 1.2,
               "visibility": "visible"
             },
             "paint": {
               "text-color": "#111827",
               "text-halo-color": "#ffffff",
               "text-halo-width": 1.5,
+              "text-halo-blur": 0,
               "text-opacity": 0.8
             }
           },

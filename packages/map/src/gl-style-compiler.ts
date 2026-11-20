@@ -2,6 +2,7 @@ import {
   compileLayerFilters,
   documentLocale,
   generatorCircleRadiusValue,
+  decorateLabelTextField,
   labelFieldTextField,
   ruleBasedVisibilityFilter,
   DEFAULT_LAYER_STYLE,
@@ -393,6 +394,7 @@ export function compileMapboxLayer(
       }
     }
     if (text === "") return null;
+    text = decorateLabelTextField(text, labels);
     // Data-defined overrides read source attributes, which the aggregated
     // dedup features do not carry. An invalid one falls back to the control.
     const override = (source: string, expectedType: "number" | "color" | "boolean") =>
@@ -434,6 +436,9 @@ export function compileMapboxLayer(
         "text-rotate": labels.rotation,
         "text-max-width": Math.max(1, labels.maxWidth),
         "text-transform": labels.transform,
+        "text-justify": labels.justify ?? DEFAULT_LAYER_STYLE.labels.justify,
+        "text-letter-spacing": labels.letterSpacing ?? 0,
+        "text-line-height": labels.lineHeight ?? DEFAULT_LAYER_STYLE.labels.lineHeight,
         // Lower sort keys place first, so they win when space is tight.
         ...(priority
           ? { "symbol-sort-key": priority as DataDrivenPropertyValueSpecification<number> }
@@ -443,6 +448,7 @@ export function compileMapboxLayer(
         "text-color": (color ?? labels.color) as DataDrivenPropertyValueSpecification<string>,
         "text-halo-color": labels.haloColor,
         "text-halo-width": Math.max(0, labels.haloWidth),
+        "text-halo-blur": Math.max(0, labels.haloBlur ?? 0),
         // Replaces the layer opacity rather than multiplying into it, as on
         // MapLibre: wrapping would invalidate top-level zoom interpolations.
         "text-opacity": (opacity ?? layer.opacity) as DataDrivenPropertyValueSpecification<number>,

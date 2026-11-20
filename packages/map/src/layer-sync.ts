@@ -6,6 +6,7 @@ import {
   generatorCircleRadiusValue,
   geojsonHasZCoordinates,
   getExternalNativePaintBridge,
+  decorateLabelTextField,
   labelFieldTextField,
   pluginOwnsPaint,
   proportionalRadiusExpression,
@@ -2590,7 +2591,7 @@ function attributeLabelTextField(
       textField = fieldTextField;
     }
   }
-  return textField;
+  return decorateLabelTextField(textField, labels) as maplibregl.ExpressionSpecification | string;
 }
 
 /**
@@ -2657,6 +2658,9 @@ function ensureAttributeLabelLayer(
         "text-rotate": labels.rotation,
         "text-max-width": Math.max(1, labels.maxWidth),
         "text-transform": labels.transform,
+        "text-justify": labels.justify ?? DEFAULT_LAYER_STYLE.labels.justify,
+        "text-letter-spacing": labels.letterSpacing ?? 0,
+        "text-line-height": labels.lineHeight ?? DEFAULT_LAYER_STYLE.labels.lineHeight,
         // Lower sort keys place first, so they win when space is tight.
         // `null` resets a previously applied priority (stripped on first
         // add by ensureLayer).
@@ -2667,6 +2671,7 @@ function ensureAttributeLabelLayer(
         "text-color": colorOverride ?? labels.color,
         "text-halo-color": labels.haloColor,
         "text-halo-width": Math.max(0, labels.haloWidth),
+        "text-halo-blur": Math.max(0, labels.haloBlur ?? 0),
         // The opacity override replaces the layer opacity rather than
         // multiplying into it: wrapping the expression would invalidate
         // top-level `["zoom"]` interpolations.

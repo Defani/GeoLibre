@@ -1,6 +1,7 @@
 import {
   DEFAULT_LAYER_STYLE,
   compileLayerFilters,
+  decorateLabelTextField,
   labelFieldTextField,
   ruleBasedVisibilityFilter,
   styleValue,
@@ -150,8 +151,22 @@ const POINT_FILTER = [
   false,
 ] as unknown as ExpressionSpecification;
 
-/** Build the label text-field expression from the layer's label config. */
+/**
+ * Build the label text-field expression from the layer's label config, with
+ * its prefix and suffix, as the live map draws it.
+ */
 function labelTextField(style: LayerStyle, warnings: string[]): ExpressionSpecification | null {
+  const text = labelValueTextField(style, warnings);
+  if (text === null) return null;
+  const labels = style.labels ?? DEFAULT_LAYER_STYLE.labels;
+  return decorateLabelTextField(text, labels) as ExpressionSpecification;
+}
+
+/** The label value's text-field expression, before any prefix or suffix. */
+function labelValueTextField(
+  style: LayerStyle,
+  warnings: string[],
+): ExpressionSpecification | null {
   const labels = style.labels ?? DEFAULT_LAYER_STYLE.labels;
   const expression = labels.expression.trim();
   if (expression) {
@@ -238,12 +253,16 @@ function buildLabelLayer(
       "text-rotate": labels.rotation,
       "text-max-width": Math.max(1, labels.maxWidth),
       "text-transform": labels.transform,
+      "text-justify": labels.justify ?? DEFAULT_LAYER_STYLE.labels.justify,
+      "text-letter-spacing": labels.letterSpacing ?? 0,
+      "text-line-height": labels.lineHeight ?? DEFAULT_LAYER_STYLE.labels.lineHeight,
       visibility,
     },
     paint: {
       "text-color": labels.color,
       "text-halo-color": labels.haloColor,
       "text-halo-width": Math.max(0, labels.haloWidth),
+      "text-halo-blur": Math.max(0, labels.haloBlur ?? 0),
       "text-opacity": layer.opacity,
     },
   } as LayerSpecification;

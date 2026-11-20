@@ -28,6 +28,7 @@ export * from "./expressions";
 export * from "./style-layer-evaluator";
 export * from "./document-locale";
 export * from "./label-number-format";
+export * from "./label-text";
 export * from "./external-native-paint";
 export * from "./attribute-form";
 export * from "./qgis-expression";

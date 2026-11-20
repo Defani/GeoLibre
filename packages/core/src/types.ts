@@ -319,6 +319,25 @@ export interface LabelStyle {
   /** Letter-case transform applied to the label text (MapLibre `text-transform`). */
   transform: LabelTransform;
   /**
+   * Text added before every label's value, e.g. `"Desa "` so `Ciwaru` labels
+   * as `Desa Ciwaru`. A feature with no value still gets no label.
+   */
+  prefix: string;
+  /** Text added after every label's value, e.g. `" m"` for contour heights. */
+  suffix: string;
+  /** Put {@link prefix} on its own line above the value. */
+  prefixOwnLine: boolean;
+  /** Put {@link suffix} on its own line below the value. */
+  suffixOwnLine: boolean;
+  /** Alignment of a label's lines against each other (MapLibre `text-justify`). */
+  justify: LabelJustify;
+  /** Extra space between letters, in ems (MapLibre `text-letter-spacing`). */
+  letterSpacing: number;
+  /** Distance between a label's lines, in ems (MapLibre `text-line-height`). */
+  lineHeight: number;
+  /** Softness of the halo's outer edge, in pixels (MapLibre `text-halo-blur`). */
+  haloBlur: number;
+  /**
    * Render a numeric {@link field} with the locale's thousands and decimal
    * separators (issue #2336), so `1234567.5` labels as `1,234,567.5` instead
    * of running together. Non-numeric values are unaffected, and it is not
@@ -397,6 +416,9 @@ export type LabelAnchor =
 
 /** Letter-case transform offered for {@link LabelStyle.transform}. */
 export type LabelTransform = "none" | "uppercase" | "lowercase";
+
+/** Line alignment offered for {@link LabelStyle.justify}. */
+export type LabelJustify = "left" | "center" | "right";
 
 /** Duplicate-label handling offered for {@link LabelStyle.dedupe}. */
 export type LabelDedupe = "off" | "unique" | "concatenate";
@@ -733,6 +755,14 @@ export const DEFAULT_LAYER_STYLE: LayerStyle = {
     rotation: 0,
     maxWidth: 10,
     transform: "none",
+    prefix: "",
+    suffix: "",
+    prefixOwnLine: false,
+    suffixOwnLine: false,
+    justify: "center",
+    letterSpacing: 0,
+    lineHeight: 1.2,
+    haloBlur: 0,
     numberFormatEnabled: false,
     numberDecimals: 0,
     numberLocale: "",

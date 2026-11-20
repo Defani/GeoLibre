@@ -4,7 +4,7 @@ import {
   type GeoLibreLayer,
   type LabelStyle,
 } from "@geolibre/core";
-import { Button, ColorField, Label, Select } from "@geolibre/ui";
+import { Button, ColorField, Input, Label, Select } from "@geolibre/ui";
 import { SquareFunction, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LABEL_OVERRIDE_PROPERTIES, labelOverrideInvalid } from "./label-overrides";
@@ -106,6 +106,52 @@ export function LabelsSection({
               )}
             </Select>
           </div>
+          {controlPainted ? null : (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="labelPrefix">{t("style.labels.prefix")}</Label>
+                <Input
+                  id="labelPrefix"
+                  value={labels.prefix}
+                  placeholder={t("style.labels.prefixPlaceholder")}
+                  onChange={(event) => updateLabels({ prefix: event.target.value })}
+                />
+                <label
+                  htmlFor="labelPrefixOwnLine"
+                  className="flex items-center gap-2 text-xs text-muted-foreground"
+                >
+                  <input
+                    id="labelPrefixOwnLine"
+                    type="checkbox"
+                    checked={labels.prefixOwnLine}
+                    onChange={(event) => updateLabels({ prefixOwnLine: event.target.checked })}
+                  />
+                  {t("style.labels.prefixOwnLine")}
+                </label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="labelSuffix">{t("style.labels.suffix")}</Label>
+                <Input
+                  id="labelSuffix"
+                  value={labels.suffix}
+                  placeholder={t("style.labels.suffixPlaceholder")}
+                  onChange={(event) => updateLabels({ suffix: event.target.value })}
+                />
+                <label
+                  htmlFor="labelSuffixOwnLine"
+                  className="flex items-center gap-2 text-xs text-muted-foreground"
+                >
+                  <input
+                    id="labelSuffixOwnLine"
+                    type="checkbox"
+                    checked={labels.suffixOwnLine}
+                    onChange={(event) => updateLabels({ suffixOwnLine: event.target.checked })}
+                  />
+                  {t("style.labels.suffixOwnLine")}
+                </label>
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
             <label
               htmlFor="labelNumberFormat"
@@ -325,6 +371,51 @@ export function LabelsSection({
                   step={1}
                   value={labels.maxWidth}
                   onChange={(maxWidth) => updateLabels({ maxWidth })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="labelJustify">{t("style.labels.justify")}</Label>
+                  <Select
+                    id="labelJustify"
+                    value={labels.justify}
+                    onChange={(event) =>
+                      updateLabels({ justify: event.target.value as LabelStyle["justify"] })
+                    }
+                  >
+                    <option value="left">{t("style.labels.justifyLeft")}</option>
+                    <option value="center">{t("style.labels.justifyCenter")}</option>
+                    <option value="right">{t("style.labels.justifyRight")}</option>
+                  </Select>
+                </div>
+                <NumericStyleInput
+                  id="labelLetterSpacing"
+                  label={t("style.labels.letterSpacing")}
+                  min={-0.5}
+                  max={2}
+                  step={0.05}
+                  value={labels.letterSpacing}
+                  onChange={(letterSpacing) => updateLabels({ letterSpacing })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <NumericStyleInput
+                  id="labelLineHeight"
+                  label={t("style.labels.lineHeight")}
+                  min={0.5}
+                  max={4}
+                  step={0.1}
+                  value={labels.lineHeight}
+                  onChange={(lineHeight) => updateLabels({ lineHeight })}
+                />
+                <NumericStyleInput
+                  id="labelHaloBlur"
+                  label={t("style.labels.haloBlur")}
+                  min={0}
+                  max={8}
+                  step={0.5}
+                  value={labels.haloBlur}
+                  onChange={(haloBlur) => updateLabels({ haloBlur })}
                 />
               </div>
               <div className="space-y-2">

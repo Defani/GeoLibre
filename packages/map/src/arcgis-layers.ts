@@ -12,6 +12,7 @@ import {
   isAdoptedVectorAwaitingFeatures,
   geojsonHasZCoordinates,
   heatmapRampColors,
+  decorateLabelString,
   labelFieldTextField,
   normalizeHexColor,
   ruleBasedVisibilityFilter,
@@ -774,7 +775,10 @@ function compileLabelText(
       // An unparseable expression keeps the field text, as on Mapbox.
     }
   }
-  const transform = labelTransform(style);
+  const caseTransform = labelTransform(style);
+  // The prefix and suffix are added after the case change, as MapLibre's
+  // `text-transform` would also change them: apply it to the whole text.
+  const transform = (text: string) => caseTransform(decorateLabelString(text, labels));
   if (typeof value === "string") {
     const text = transform(value);
     return { read: () => text, zoomDependent: false };

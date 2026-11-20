@@ -1,6 +1,7 @@
 import {
   compileFeatureExpression,
   DEFAULT_LAYER_STYLE,
+  decorateLabelString,
   formatLabelNumber,
   type GeoLibreLayer,
   documentLocale,
@@ -225,7 +226,10 @@ export function createCesiumLabeler(
     if (value === undefined || value === null || value === "") return "";
     // Number formatting applies to the field only, matching the 2D map: an
     // expression formats its own output.
-    let text = (fromExpression ? null : formatLabelNumber(value, labels, locale)) ?? String(value);
+    let text = decorateLabelString(
+      (fromExpression ? null : formatLabelNumber(value, labels, locale)) ?? String(value),
+      labels,
+    );
     if (labels.transform === "uppercase") text = text.toUpperCase();
     if (labels.transform === "lowercase") text = text.toLowerCase();
     return text;
